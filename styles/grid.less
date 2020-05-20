@@ -1,0 +1,50 @@
+@primary-color: blue;
+@secondary-color: grey;
+
+*,
+*:before,
+*:after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.bg-primary {
+  background: @primary-color, 100%;
+}
+
+.bg-secondary {
+  background: @secondary-color;
+}
+
+.flex-item-style {
+  background: @primary-color;
+  padding: 5px;
+  text-align: center;
+  border-radius: 0.2em;
+  border: 1px solid darken(@primary-color, 20%);
+}
+
+.container-fluid {
+  width: 100%;
+}
+
+.flex-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+
+.generate-columns(12);
+
+.generate-columns(@n, @i: 1) when (@i =< @n) {
+  .col-@{i} {
+    padding: 0 15px;
+    width: (100% / @n * @i);
+  }
+
+  .generate-columns(@n, (@i + 1));
+}
+
+
+
