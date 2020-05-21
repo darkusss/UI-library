@@ -6,6 +6,7 @@
 
     <link rel="stylesheet/less" type="text/css" href="styles/grid.less"/>
     <link rel="stylesheet/less" type="text/css" href="styles/button.less"/>
+    <link rel="stylesheet/less" type="text/css" href="styles/modal.less"/>
 </head>
 <body>
 <div class="container-fluid">
@@ -228,7 +229,28 @@
 <a href="#" class="btn btn-outline-dark" aria-disabled="true">disabled link</a>
 <button class="btn btn-primary active">primary active</button>
 
+<button class="btn btn-outline-dark" type="button" data-modal-target="#modal">Open modal</button>
+<div class="modal" id="modal">
+    <div class="modal-header">
+        <h2>Modal window is just opened</h2>
+        <button data-close-button class="close-button">&times;</button>
+    </div>
+    <div class="modal-body">
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad asperiores assumenda consequatur culpa eius
+        explicabo illum incidunt ipsa iste itaque mollitia neque, nisi obcaecati, optio perferendis sapiente, sint sit
+        totam? Iste magnam natus pariatur saepe! Autem ea eius, eum iure laborum obcaecati repellendus repudiandae
+        voluptate! Assumenda dolor doloribus id incidunt officiis rerum. Accusantium aliquid architecto doloremque nobis
+        quos, tempore voluptatibus?
+    </div>
+    <div class="modal-footer">
+
+    </div>
+</div>
+
+<div id="overlay"></div>
+
 <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/3.9.0/less.min.js"></script>
+<script src="js/modal.js"></script>
 
 </body>
 </html>
