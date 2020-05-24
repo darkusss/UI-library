@@ -7,8 +7,27 @@
     <link rel="stylesheet/less" type="text/css" href="styles/grid.less"/>
     <link rel="stylesheet/less" type="text/css" href="styles/button.less"/>
     <link rel="stylesheet/less" type="text/css" href="styles/modal.less"/>
+    <link rel="stylesheet/less" type="text/css" href="styles/burger.less"/>
 </head>
 <body>
+
+<header class="header">
+    <div class="header__container">
+        <h1 class="header_brand">Logo</h1>
+        <div class="burger" id="burger">
+            <div class="line"></div>
+            <div class="line"></div>
+            <div class="line"></div>
+        </div> <!--BURGER MENU-->
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Contact</a></li>
+                <li><a href="#">About</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
 <div class="container-fluid">
     <div class="flex-row">
         <div class="col-1">
@@ -246,11 +265,12 @@
 
     </div>
 </div>
-
 <div id="overlay"></div>
+
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/3.9.0/less.min.js"></script>
 <script src="js/modal.js"></script>
+<script src="js/burger.js"></script>
 
 </body>
 </html>
