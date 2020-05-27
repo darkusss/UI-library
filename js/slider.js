@@ -1,12 +1,12 @@
 const carouselSlide = document.querySelector('.carousel-slide');
-const carouselImages = document.querySelectorAll('.carousel-slide .carousel-img');
+const carouselImages = document.querySelectorAll('.carousel-slide img');
 
 const prevButton = document.querySelector('#prevButton');
 const nextButton = document.querySelector('#nextButton');
 
-let counter = 0;
+const imgWidth = carouselImages[0].naturalWidth;
 
-const imgWidth = 267;
+let counter = 0;
 
 nextButton.addEventListener('click', () => {
     if (counter < carouselImages.length - 1) {
