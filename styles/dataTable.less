@@ -1,0 +1,46 @@
+.table-section {
+  padding-top: 50px;
+  margin-top: 50px;
+  border-top: 1px solid darken(white, 50%);
+}
+
+#user-table {
+  width: 50vw;
+  margin: 0 auto;
+
+  table{
+    border: 1px solid black;
+    border-collapse: collapse;
+    width: 100%;
+
+
+    td, th {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+
+    tr:nth-child(even) {
+      background: #CCC;
+    }
+
+    thead th {
+      text-align: center;
+      padding-top: 12px;
+      padding-bottom: 12px;
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    tbody tr td:first-child {
+      text-align: center;
+    }
+
+    tbody tr td {
+      text-align: start;
+    }
+
+    .align-right {
+      text-align: right;
+    }
+  }
+}
