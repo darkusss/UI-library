@@ -1,14 +1,28 @@
-
-export function DataTable(config1 = undefined, data = undefined, sorts) {
-	createTable(config1, data, sorts);
+export function DataTable(config, data, sorts, searchId) {
+	const parent = document.querySelector(config.parent);
+	const search = config.search;
+	if (search != undefined && search.fields && search.filters && search.fields.length && search.filters.length)
+		createSearchField(parent, searchId)
+	createTable(config, parent, data, sorts);
 }
 
-function createTable(config, users, sorts) {
+function createSearchField(parent, name) {
+	const div = document.createElement('div');
+	const input = document.createElement('input');
+
+	input.setAttribute('type', 'text');
+
+	div.setAttribute('id', name);
+	div.appendChild(input);
+
+	parent.appendChild(div);
+}
+
+function createTable(config, parent, users, sorts) {
 	// TODO: Если нет данных, то сделать модалку с ошибкой
 	if (config == undefined || users == undefined || !users.length) return;
 
 	const table = document.createElement('table');
-	const parent = document.querySelector(config.parent);
 
 	parent.appendChild(table);
 
@@ -87,7 +101,7 @@ export function sortBy(defaultSort, data, sorts) {
 
 	if (field === 'age' && sortType.includes('up')) {
 		sortData.sort((u1, u2) => u1.id - u2.id);
-	} else if (field === 'age' && sortType.includes('down')){
+	} else if (field === 'age' && sortType.includes('down')) {
 		sortData.sort((u1, u2) => u2.id - u1.id);
 	} else if (field === 'surname' && sortType.includes('down')) {
 		sortData.sort((u1, u2) => u1.surname.localeCompare(u2.surname));
@@ -129,9 +143,5 @@ export function changeSort(buttons, button, defaultSort, sorts) {
 export function renderTable(table, sortData) {
 	createTableBodyWith(table, sortData);
 }
-
-
-
-
 
 
