@@ -1,95 +1,69 @@
+import * as table from "./table.js";
+
 const config1 = {
-    parent: '#user-table',
-    columns: [
-        {
-            title: '№',
-            value: '_index'
-        },
-        {
-            title: 'Имя',
-            value: 'name'
-        },
-        {
-            title: 'Фамилия',
-            value: 'surname'
-        },
-        {
-            title: 'Возраст',
-            value: 'age',
-            type: 'number'
-        },
-    ]
+	parent: '#user-table',
+	columns: [
+		{
+			title: '№',
+			value: '_index'
+		},
+		{
+			title: 'Имя',
+			value: 'name'
+		},
+		{
+			title: 'Фамилия',
+			value: 'surname',
+			sortable: true
+		},
+		{
+			title: 'Возраст',
+			value: 'age',
+			type: 'number',
+			sortable: true
+		},
+	],
+	// type: no, ascending, descending
+	// field: surname, age
+	defaultSort: {
+		field: 'age',
+		type: 'no'
+	},
 };
 
 const users = [
-    {
-        id: 30050,
-        name: 'Вася',
-        surname: 'Петров',
-        age: 12
-    },
-    {
-        id: 30051,
-        name: 'Вася',
-        surname: 'Васечкин',
-        age: 15
-    },
+	{
+		id: 30050,
+		name: 'Вася',
+		surname: 'Петров',
+		age: 12
+	},
+	{
+		id: 30051,
+		name: 'Вася',
+		surname: 'Васечкин',
+		age: 15
+	}
 ];
 
-function DataTable(config, data) {
+const sorts = {
+	no: 'fas fa-sort',
+	ascending: 'fas fa-sort-up',
+	descending: 'fas fa-sort-down'
+};
 
-    const table = document.querySelector(config.parent);
 
-    createTable(table, config.columns, data);
-}
+const parent = document.querySelector(config1.parent);
 
-function createTable(parent, columns, users) {
+table.DataTable(config1, users, sorts);
 
-    const table = document.createElement('table');
+const buttons = document.querySelectorAll('[class^="fas fa-sort"]');
 
-    parent.appendChild(table);
+buttons.forEach(button => {
+	button.addEventListener('click', () => {
+		table.changeSort(buttons, button, config1.defaultSort, sorts);
+		const sortUsers = table.sortBy(config1.defaultSort, users, sorts);
+		table.renderTable(parent, sortUsers);
+	})
+})
 
-    createThead(table, columns);
-    createTbody(table, users);
-}
-
-function createThead(table, columns) {
-
-    const thead = table.createTHead();
-    const row = thead.insertRow(0);
-
-    let cell;
-
-    for (let i = 0; i < columns.length; i++) {
-        cell = row.appendChild(document.createElement('th'));
-        if (columns[i].type) {
-            cell.setAttribute('class', 'align-right');
-        }
-        cell.innerHTML = columns[i].title;
-    }
-}
-
-function createTbody(table, users) {
-
-    const tbody = table.createTBody();
-
-    let _index = 1, row, cell;
-
-    for (let i = 0, j = 1; i < users.length; i++, j = 1) {
-        row = tbody.insertRow(i);
-        cell = row.insertCell(0);
-        cell.innerHTML = _index++;
-
-        for (let prop in users[i]) {
-            if (prop === 'id') continue;
-            cell = row.insertCell(j++);
-            if (typeof users[i][prop] === 'number') {
-                cell.setAttribute('class', 'align-right');
-            }
-            cell.innerHTML = users[i][prop];
-        }
-    }
-
-}
-
-DataTable(config1, users);
