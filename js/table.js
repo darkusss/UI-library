@@ -1,8 +1,16 @@
 export function DataTable(config, data, sorts, searchId) {
 	const parent = document.querySelector(config.parent);
 	const search = config.search;
-	if (search != undefined && search.fields && search.filters && search.fields.length && search.filters.length)
-		createSearchField(parent, searchId)
+
+
+	if (search != undefined && search.fields) {
+		// find by all
+		createSearchField(parent, searchId);
+	} else if (search != undefined && search.fields && search.filters && search.fields.length && search.filters.length) {
+		//...
+	} else {
+		// nothing to find
+	}
 	createTable(config, parent, data, sorts);
 }
 
@@ -100,10 +108,10 @@ export function sortBy(defaultSort, data, sorts) {
 	const sortData = [...data];
 
 	if (field === 'age' && sortType.includes('up')) {
-		sortData.sort((u1, u2) => u1.id - u2.id);
+		sortData.sort((u1, u2) => u1.age - u2.age);
 	} else if (field === 'age' && sortType.includes('down')) {
-		sortData.sort((u1, u2) => u2.id - u1.id);
-	} else if (field === 'surname' && sortType.includes('down')) {
+		sortData.sort((u1, u2) => u2.age - u1.age);
+	} else if (field === 'surname' && sortType.includes('up')) {
 		sortData.sort((u1, u2) => u1.surname.localeCompare(u2.surname));
 	} else if (field === 'surname' && sortType.includes('down')) {
 		sortData.sort((u1, u2) => u2.surname.localeCompare(u1.surname));
@@ -112,15 +120,19 @@ export function sortBy(defaultSort, data, sorts) {
 	return sortData;
 }
 
+function setUselessButtonDefault(buttons, button, sorts, defaultSort) {
+	buttons.forEach(btn => {
+		if (btn !== button)
+			btn.setAttribute('class', sorts[defaultSort.type])
+	});
+}
+
 export function changeSort(buttons, button, defaultSort, sorts) {
 	const parentCol = button.closest('th');
 
 	if (defaultSort.field !== parentCol.getAttribute('id')) {
 		defaultSort.type = 'no';
-		buttons.forEach(btn => {
-			if (btn !== button)
-				btn.setAttribute('class', sorts[defaultSort.type])
-		})
+		setUselessButtonDefault(buttons, button, sorts, defaultSort);
 	}
 
 	defaultSort.field = parentCol.getAttribute('id');
@@ -143,5 +155,14 @@ export function changeSort(buttons, button, defaultSort, sorts) {
 export function renderTable(table, sortData) {
 	createTableBodyWith(table, sortData);
 }
+
+export function findBy(table, users, fields, query) {
+	return users.filter((user) => {
+			return fields.filter((field) => {
+				user[field].includes(query);
+			}).length
+		});
+}
+
 
 

@@ -9,7 +9,7 @@ const config1 = {
 		},
 		{
 			title: 'Имя',
-			value: 'name'
+			value: 'name',
 		},
 		{
 			title: 'Фамилия',
@@ -33,13 +33,12 @@ const config1 = {
 		fields: ['name', 'surname'],
 		filters: [
 			v => v.toLowerCase(),
-			v => toKeyboardLayout(v, 'ru'),
-			v => toKeyboardLayout(v, 'en')
+			v => toKeyboardLayout(v)
 		]
 	}
 };
 
-function toKeyboardLayout(str, language) {
+function toKeyboardLayout(str) {
 	let associativeArray = {
 		"q": "й", "w": "ц", "e": "у", "r": "к", "t": "е", "y": "н", "u": "г",
 		"i": "ш", "o": "щ", "p": "з", "[": "х", "]": "ъ", "a": "ф", "s": "ы",
@@ -65,6 +64,12 @@ const users = [
 		name: 'Вася',
 		surname: 'Васечкин',
 		age: 15
+	},
+	{
+		id: 30052,
+		name: 'Петр',
+		surname: 'Петрович',
+		age: 13
 	}
 ];
 
@@ -75,9 +80,21 @@ const sorts = {
 };
 
 
-const parent = document.querySelector(config1.parent);
 
-table.DataTable(config1, users, sorts, 'table-search');
+
+const parent = document.querySelector(config1.parent);
+const searchId = 'table-search';
+
+table.DataTable(config1, users, sorts, searchId);
+
+const input = document.querySelector(`#${searchId} input`);
+const userTable = document.querySelector(`${config1.parent} table`);
+
+input.addEventListener('input', () => {
+	console.log(table.findBy(userTable, users, config1.search.fields, input.value));
+})
+
+
 
 const buttons = document.querySelectorAll('[class^="fas fa-sort"]');
 
