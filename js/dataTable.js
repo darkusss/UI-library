@@ -1,4 +1,4 @@
-import * as table from "./table.js";
+import {DataTable} from "./table.js";
 
 const config1 = {
 	parent: '#user-table',
@@ -32,25 +32,10 @@ const config1 = {
 	search: {
 		fields: ['name', 'surname'],
 		filters: [
-			v => v.toLowerCase(),
-			v => toKeyboardLayout(v)
+			v => toKeyboardLayout(v.toLowerCase())
 		]
 	}
 };
-
-function toKeyboardLayout(str) {
-	let associativeArray = {
-		"q": "й", "w": "ц", "e": "у", "r": "к", "t": "е", "y": "н", "u": "г",
-		"i": "ш", "o": "щ", "p": "з", "[": "х", "]": "ъ", "a": "ф", "s": "ы",
-		"d": "в", "f": "а", "g": "п", "h": "р", "j": "о", "k": "л", "l": "д",
-		";": "ж", "'": "э", "z": "я", "x": "ч", "c": "с", "v": "м", "b": "и",
-		"n": "т", "m": "ь", ",": "б", ".": "ю", "/": "."
-	};
-	return str.replace(/[A-z\/,.;\]\[]/g, function (x) {
-		return associativeArray[x];
-	});
-
-}
 
 const users = [
 	{
@@ -70,39 +55,37 @@ const users = [
 		name: 'Петр',
 		surname: 'Петрович',
 		age: 13
-	}
+	},
+	{
+		id: 30053,
+		name: 'Лев',
+		surname: 'Толстой',
+		age: 20
+	},
+	{
+		id: 30054,
+		name: 'Билл',
+		surname: 'Гейтс',
+		age: 50
+	},
 ];
 
-const sorts = {
-	no: 'fas fa-sort',
-	ascending: 'fas fa-sort-up',
-	descending: 'fas fa-sort-down'
-};
+function toKeyboardLayout(str) {
+	let associativeArray = {
+		"q": "й", "w": "ц", "e": "у", "r": "к", "t": "е", "y": "н", "u": "г",
+		"i": "ш", "o": "щ", "p": "з", "[": "х", "]": "ъ", "a": "ф", "s": "ы",
+		"d": "в", "f": "а", "g": "п", "h": "р", "j": "о", "k": "л", "l": "д",
+		";": "ж", "'": "э", "z": "я", "x": "ч", "c": "с", "v": "м", "b": "и",
+		"n": "т", "m": "ь", ",": "б", ".": "ю", "/": "."
+	};
+	return str.replace(/[A-z\/,.;\]\[]/g, function (x) {
+		return associativeArray[x];
+	});
+}
+
+DataTable(config1, users);
 
 
 
 
-const parent = document.querySelector(config1.parent);
-const searchId = 'table-search';
-
-table.DataTable(config1, users, sorts, searchId);
-
-const input = document.querySelector(`#${searchId} input`);
-const userTable = document.querySelector(`${config1.parent} table`);
-
-input.addEventListener('input', () => {
-	console.log(table.findBy(userTable, users, config1.search.fields, input.value));
-})
-
-
-
-const buttons = document.querySelectorAll('[class^="fas fa-sort"]');
-
-buttons.forEach(button => {
-	button.addEventListener('click', () => {
-		table.changeSort(buttons, button, config1.defaultSort, sorts);
-		const sortUsers = table.sortBy(config1.defaultSort, users, sorts);
-		table.renderTable(parent, sortUsers);
-	})
-})
 
