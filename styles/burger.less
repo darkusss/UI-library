@@ -17,25 +17,33 @@
 
       & a {
         text-decoration: none;
+				color: black;
+
+				&:hover {
+					border-bottom: 1px solid black;
+				}
       }
     }
   }
 }
 
 @media @medium {
+	.header__container {
+		justify-content: center;
+		margin-bottom: 50px;
+	}
+
   .nav-menu {
-    transform: scale(0);
+    display: none !important;
 
     &.active {
-      background: black;
-      border: 1px solid black;
-      transform: scale(1);
-      position: fixed;
-      top: 45px;
+      position: absolute;
+			top: 50px;
       right: 0;
-      display: flex;
+			left: 0;
+      display: flex !important;
       flex-direction: column;
-
+			align-items: center;
     }
   }
 
@@ -45,6 +53,7 @@
     position: absolute;
     top: 25px;
     right: 0;
+		z-index: 5;
 
     & .line {
       height: 2px;

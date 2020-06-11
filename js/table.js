@@ -11,8 +11,7 @@ export function DataTable(config, data) {
 	const parent = document.querySelector(config.parent);
 	const search = config.search;
 
-
-	if (search !== undefined && search.fields)
+	if (search !== undefined)
 		createSearchField(parent);
 
 	createTable(config, parent, data);
@@ -66,7 +65,7 @@ function createTableHead(config, table) {
 		if (col.sortable) {
 			const type = !col.type ? 'string' : col.type;
 			const sortClass = sorts[config.defaultSort.type];
-			cell.innerHTML += `<button type="button" data-type="${type}" data-value="${col.value}"><i class="${sortClass}"></i></button>`;
+			cell.innerHTML += ` <button type="button" data-type="${type}" data-value="${col.value}"><i class="${sortClass}"></i></button>`;
 		}
 	});
 }
@@ -166,7 +165,8 @@ function changeSort(buttons, button, defaultSort) {
 }
 
 function findBy(users, search, query) {
-	const {fields, filters} = search;
+	let {fields, filters} = search;
+	if (!fields)
 	if (query != "")
 		return users.filter((user) => {
 			return fields.filter((field) => {
