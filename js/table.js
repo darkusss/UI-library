@@ -25,6 +25,7 @@ function createSearchField(parent) {
 	input.setAttribute('type', 'text');
 
 	div.setAttribute('id', searchId);
+	div.classList.add(searchId);
 	div.appendChild(input);
 
 	parent.appendChild(div);
