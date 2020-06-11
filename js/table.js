@@ -193,7 +193,6 @@ function addButtonListener(config1, users, table, buttons) {
 function addInputListener(config, table, users, input) {
 	input.addEventListener('input', () => {
 		const filterUser = findBy(users, config.search, input.value);
-		console.log(filterUser);
 		renderTable(config.columns, table, filterUser)
 	});
 }
