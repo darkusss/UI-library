@@ -92,8 +92,7 @@ export function renderTable(cols, table, users) {
 			if (user[col.value]) {
 				cell = row.appendChild(document.createElement('td'));
 				cell.innerHTML = user[col.value];
-
-				if (user.type === 'number') {
+				if (col.type === 'number') {
 					cell.classList.add('align-right');
 				}
 			}
@@ -104,7 +103,6 @@ export function renderTable(cols, table, users) {
 function sortBy(button, data) {
 	const {type, value} = button.dataset;
 	const sortType = button.querySelector('i').getAttribute('class');
-	console.log(type);
 	const sortData = [...data];
 
 	if (type === 'number') {
