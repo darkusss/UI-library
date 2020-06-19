@@ -4,23 +4,113 @@ const sorts = {
 	descending: 'fas fa-sort-down'
 };
 
-const searchId = 'table-search';
-
-
-export function DataTable(config, data) {
+export async function DataTable(config, data) {
 	const parent = document.querySelector(config.parent);
 	const search = config.search;
+	const modalId = 'modal-for-table';
 
+	let users;
+	let apiURL;
 
-	if (search !== undefined && search.fields)
-		createSearchField(parent);
+	if (!data && config.apiUrl) {
+		apiURL = config.apiUrl;
+		users = await getData(apiURL);
+	} else {
+		users = [...data];
+	}
 
-	createTable(config, parent, data);
+	if (search) createSearchField(parent);
+
+	// addUserButton('Добавить', parent, 'modal-for-table', 'btn-outline-success');
+	const button = parent.querySelector('button');
+	button.dataset.modalTarget = '#' + modalId;
+	addModalWindow(modalId, parent, 'Введите данные', config.columns);
+
+	// const tableSection = document.querySelector('.table-section');
+	// const buttonAdd = tableSection.querySelector('[data-close-button]');
+	//
+	// console.log(buttonAdd);
+	//
+	// const name = document.querySelector('#name');
+	// const surname = document.querySelector('#surname');
+	// const picture = document.querySelector('#picture');
+	// const dataOfBirthday = document.querySelector('#birthday');
+	//
+	// addListener(buttonAdd, 'click', () => {
+	//
+	// 	console.log(name.value, surname.value, picture.value, dataOfBirthday.value);
+	// })
+
+	createTable(apiURL, config, parent, users);
+}
+
+function addModalWindow(id, parent, modalHeaderText, cols) {
+	const modal = document.createElement('div');
+
+	parent.appendChild(modal);
+
+	modal.classList.add('modal');
+	modal.setAttribute('id', id);
+
+	const modalHeader = addModal('modal-header', modal);
+
+	modalHeader.innerHTML = `<h2>${modalHeaderText}</h2>`;
+
+	const modalBody = addModal('modal-body', modal);
+
+	addInputFields(modalBody, cols);
+
+	const modalFooter = addModal('modal-footer', modal);
+
+	modalFooter.innerHTML = '<button type="button" class="btn btn-outline-success" data-close-button >Сохранить<button/>' +
+		'<button type="button" class="btn btn-outline-danger" data-close-button >Отменить<button/>';
+}
+
+function addModal(name, parent) {
+	const modalElement = appendElement(parent, 'div');
+	modalElement.classList.add(name);
+
+	return modalElement;
+}
+
+function addInputFields(parent, cols) {
+	const filterCols = cols.filter((col) => col.editable);
+	filterCols.forEach((col) => {
+		addInputField(parent, col);
+	})
+}
+
+function addInputField(parent, col) {
+	const label = appendElement(parent, 'label');
+	label.innerText = col.title + ':';
+	label.setAttribute('for', col.value);
+	const input = appendElement(label, 'input');
+	input.setAttribute('id', col.value);
+	if (col.value === 'avatar') {
+		input.setAttribute('type', 'date');
+	} else {
+		input.setAttribute('type', 'text');
+	}
+}
+
+function addUserButton(name, parent, id, btnStyleClass) {
+	const button = document.createElement('button');
+
+	button.innerText = name;
+	button.setAttribute('type', 'button');
+	button.classList.add('btn');
+	button.classList.add(btnStyleClass);
+	button.dataset.modalTarget = '#' + id;
+
+	parent.append(button);
+
+	return button;
 }
 
 function createSearchField(parent) {
 	const div = document.createElement('div');
 	const input = document.createElement('input');
+	const searchId = 'table-search';
 
 	input.setAttribute('type', 'text');
 
@@ -31,7 +121,7 @@ function createSearchField(parent) {
 	parent.appendChild(div);
 }
 
-function createTable(config, parent, users) {
+function createTable(apiURL, config, parent, users) {
 
 	if (!config) return;
 
@@ -40,118 +130,148 @@ function createTable(config, parent, users) {
 	parent.appendChild(table);
 
 	createTableHead(config, table);
-	renderTable(config.columns, table, users);
 
-	const buttons = document.querySelectorAll('#user-table button');
-	const input = document.querySelector('#user-table input')
+	if (!users.length) return;
 
-	addButtonListener(config, users, table, buttons);
-	addInputListener(config, table, users, input);
+	const type = typeof users[0][config.defaultSort.field];
+	const value = config.defaultSort.field;
+	const state = sorts[config.defaultSort.state];
+	const sortUsers = sortBy(type, value, state, users);
+
+	renderTable(apiURL, config.columns, table, sortUsers);
+
+	const buttons = table.tHead.querySelectorAll('button');
+	const input = parent.querySelector('input');
+
+	buttons.forEach(btn => {
+		addListener(btn, 'click', () => {
+			const sortType = changeSort(parent, btn);
+			const sortUsers = sortBy(btn.dataset.type, btn.dataset.value, sortType, users);
+			renderTable(apiURL, config.columns, table, sortUsers);
+		});
+	});
+
+	addListener(input, 'input', () => {
+		const filterUser = findBy(users, config.search, input.value);
+		renderTable(apiURL, config.columns, table, filterUser);
+	});
 }
 
 function createTableHead(config, table) {
 	const thead = document.createElement('thead');
-
-	table.appendChild(thead);
 	const row = document.createElement('tr');
 
+	table.appendChild(thead);
 	thead.appendChild(row);
 
 	config.columns.forEach(col => {
-		const cell = row.appendChild(document.createElement('th'));
+		const cell = appendElement(row, 'th');
 		if (col.type) {
 			cell.classList.add('align-right');
 		}
-		cell.innerHTML = col.title;
+		cell.innerText = col.title;
 		if (col.sortable) {
 			const type = !col.type ? 'string' : col.type;
-			const sortClass = sorts[config.defaultSort.type];
+			const sortClass = col.value === config.defaultSort.field ? sorts[config.defaultSort.state] : sorts['no'];
 			cell.innerHTML += `<button type="button" data-type="${type}" data-value="${col.value}"><i class="${sortClass}"></i></button>`;
 		}
 	});
 }
 
-export function renderTable(cols, table, users) {
-	const getTbody = table.querySelector('tbody');
+function appendElement(parent, name) {
+	return parent.appendChild(document.createElement(name));
+}
 
-	let tbody;
+export function renderTable(apiURL, cols, table, users) {
+	let tbody = table.querySelector('tbody');
 
-	if (getTbody) {
-		getTbody.remove();
+	if (tbody) {
+		tbody.innerHTML = '';
+	} else {
+		tbody = appendElement(table, 'tbody');
 	}
-
-	tbody = table.appendChild(document.createElement('tbody'));
 
 	let row, cell;
 
 	users.forEach((user, _index) => {
-		row = tbody.appendChild(document.createElement('tr'));
-		cell = row.appendChild(document.createElement('td'));
-		cell.innerHTML = _index + 1;
+		row = appendElement(tbody, 'tr');
+		cell = appendElement(row, 'td');
+		cell.innerText = _index + 1;
 
 		cols.forEach((col) => {
-			if (user[col.value]) {
-				cell = row.appendChild(document.createElement('td'));
-				cell.innerHTML = user[col.value];
+			if (col.visible) {
+				cell = appendElement(row, 'td');
+				cell.innerText = user[col.value];
 				if (col.type === 'number') {
 					cell.classList.add('align-right');
+				}
+				if (typeof col.value === 'function') {
+					cell.innerText = col.value(user);
+				} else if (col.value === 'avatar') {
+					cell.innerHTML = `<img src="${user[col.value]}" alt="image"/>`;
+					cell.classList.add('align-center');
+				}
+				if (col.value === 'acts') {
+					cell.innerHTML = addButton('Удалить', user.id);
+					const button = cell.querySelector('button');
+					// todo: вынести
+					button.addEventListener('click', async () => {
+						users = await deleteUserById(apiURL, user.id)
+							.then(() => getData(apiURL));
+						renderTable(apiURL, cols, table, users);
+					});
+					cell.classList.add('align-center');
 				}
 			}
 		});
 	});
 }
 
-function sortBy(button, data) {
-	const {type, value} = button.dataset;
-	const sortType = button.querySelector('i').getAttribute('class');
+async function getData(apiURL) {
+	return fetch(apiURL)
+		.then((res) => res.json())
+		.catch((error) => console.log(error));
+}
+
+async function deleteUserById(apiURL, userId) {
+	return fetch(`${apiURL}/${userId}`, {method: 'DELETE'});
+}
+
+function addButton(name, userId) {
+	return `<button type="button" data-id="${userId}">${name}</button>`;
+}
+
+function sortBy(type, value, sortType, data) {
 	const sortData = [...data];
+	const coef = sortType.includes('up') ? 1 : sortType.includes('down') ? -1 : 0;
 
 	if (type === 'number') {
-		switch (value) {
-			case 'age':
-				if (sortType.includes('up')) {
-					sortData.sort((u1, u2) => u1.age - u2.age);
-				} else if (sortType.includes('down')) {
-					sortData.sort((u1, u2) => u2.age - u1.age);
-				}
-				break;
-		}
+		sortData.sort((u1, u2) => {
+			return (u1[value] - u2[value]) * coef;
+		})
 	} else if (type === 'string') {
-		switch (value) {
-			case 'surname':
-				if (sortType.includes('up')) {
-					sortData.sort((u1, u2) => u1.surname.localeCompare(u2.surname));
-				} else if (sortType.includes('down')) {
-					sortData.sort((u1, u2) => u2.surname.localeCompare(u1.surname));
-				}
-				break;
-		}
+		sortData.sort((u1, u2) => {
+			return (u1[value].localeCompare(u2[value])) * coef;
+		})
 	}
 	return sortData;
 }
 
-function setUnusedButtonDefault(buttons, button, icons, icon, defaultSort) {
-	buttons.forEach(btn => {
-		if (btn !== button) {
-			icons.forEach((icn) => {
-				if (icn !== icon) {
-					icn.setAttribute('class', sorts[defaultSort.type]);
-				}
-			})
-		}
-	});
+function setUnusedIconsDefault(icons) {
+	icons.forEach((icon) => {
+		icon.setAttribute('class', sorts['no']);
+	})
 }
 
-function changeSort(buttons, button, defaultSort) {
+function changeSort(parent, button) {
 
-	const icons = document.querySelectorAll('th i');
+	const icons = parent.querySelectorAll('button i');
 	const currentIcon = button.querySelector('i');
+	const currentSortIcon = currentIcon.getAttribute('class');
 
-	setUnusedButtonDefault(buttons, button, icons, currentIcon, defaultSort);
+	setUnusedIconsDefault(icons);
 
-	let currentSort = currentIcon.getAttribute('class');
-
-	switch (currentSort) {
+	switch (currentSortIcon) {
 		case 'fas fa-sort':
 			currentIcon.setAttribute('class', sorts['ascending']);
 			break;
@@ -163,40 +283,23 @@ function changeSort(buttons, button, defaultSort) {
 			break;
 	}
 
+	return currentIcon.getAttribute('class');
 }
 
 function findBy(users, search, query) {
+	if (query === "") return users;
+
 	const {fields, filters} = search;
-	if (query != "")
-		return users.filter((user) => {
-			return fields.filter((field) => {
-				return filters.filter((searchFilter) => {
-					return searchFilter(user[field]).includes(searchFilter(query));
-				}).length
+
+	return users.filter((user) => {
+		return fields.filter((field) => {
+			return filters.filter((searchFilter) => {
+				return searchFilter(user[field]).includes(searchFilter(query));
 			}).length
-		});
-	return users;
-}
-
-function addButtonListener(config1, users, table, buttons) {
-	buttons.forEach(button => {
-		button.addEventListener('click', () => {
-			changeSort(buttons, button, config1.defaultSort);
-			const sortUsers = sortBy(button, users);
-			renderTable(config1.columns, table, sortUsers);
-		})
-	})
-}
-
-
-function addInputListener(config, table, users, input) {
-	input.addEventListener('input', () => {
-		const filterUser = findBy(users, config.search, input.value);
-		renderTable(config.columns, table, filterUser)
+		}).length
 	});
 }
 
-
-
-
-
+function addListener(element, event, callback) {
+	element.addEventListener(event, callback);
+}
