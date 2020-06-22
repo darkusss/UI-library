@@ -1,110 +1,116 @@
+import {closeModal} from './modal.js';
+
 const sorts = {
 	no: 'fas fa-sort',
 	ascending: 'fas fa-sort-up',
 	descending: 'fas fa-sort-down'
 };
 
-export async function DataTable(config, data) {
+async function DataTable(config, data) {
 	const parent = document.querySelector(config.parent);
-	const search = config.search;
-	const modalId = 'modal-for-table';
+	const addUserButton = document.querySelector('#add-user');
+	const modalId = addUserButton.dataset.modalTarget.slice(1);
 
-	let users;
-	let apiURL;
+	const users = !data && config.apiUrl ? await getData(config.apiUrl) : [...data];
 
-	if (!data && config.apiUrl) {
-		apiURL = config.apiUrl;
-		users = await getData(apiURL);
-	} else {
-		users = [...data];
-	}
+	if (config.search) createSearchField(parent);
+	
+	const table = await createTable(config.apiUrl, config, parent);
 
-	if (search) createSearchField(parent);
+	const popUpWindow = createPopupWindow(modalId);
+	const addUserPopupHeader = createAddUserPopupHeader('Введите данные');
+	const addUserPopupBody = createAddUserPopupBody(config.columns);
 
-	// addUserButton('Добавить', parent, 'modal-for-table', 'btn-outline-success');
-	const button = parent.querySelector('button');
-	button.dataset.modalTarget = '#' + modalId;
-	addModalWindow(modalId, parent, 'Введите данные', config.columns);
+	const buttonEventListeners = {
+		onSaveEventListener: () => {
+			const popupDOMInputs = {};
 
-	// const tableSection = document.querySelector('.table-section');
-	// const buttonAdd = tableSection.querySelector('[data-close-button]');
-	//
-	// console.log(buttonAdd);
-	//
-	// const name = document.querySelector('#name');
-	// const surname = document.querySelector('#surname');
-	// const picture = document.querySelector('#picture');
-	// const dataOfBirthday = document.querySelector('#birthday');
-	//
-	// addListener(buttonAdd, 'click', () => {
-	//
-	// 	console.log(name.value, surname.value, picture.value, dataOfBirthday.value);
-	// })
+			config.columns.forEach(column => {
+				if (column.editable) {
+					const { value } = document.getElementById(column.value);
+					popupDOMInputs[column.value] = value;
+				}
+			});
 
-	createTable(apiURL, config, parent, users);
+			saveUser(popUpWindow, config.apiUrl, table, users, popupDOMInputs, config.columns)
+		},
+		onCloseEventListener: () => closeModal(popUpWindow)
+	};
+
+	const addUserPopupFooter = createAddUserPopupFooter(popUpWindow, buttonEventListeners);
+
+	popUpWindow.append(addUserPopupHeader, addUserPopupBody, addUserPopupFooter);
+
+	parent.append(popUpWindow);
 }
 
-function addModalWindow(id, parent, modalHeaderText, cols) {
-	const modal = document.createElement('div');
+function createPopupWindow(id) {
+	const popupWindow = document.createElement('div');
 
-	parent.appendChild(modal);
+	popupWindow.classList.add('modal');
+	popupWindow.id = id;
 
-	modal.classList.add('modal');
-	modal.setAttribute('id', id);
-
-	const modalHeader = addModal('modal-header', modal);
-
-	modalHeader.innerHTML = `<h2>${modalHeaderText}</h2>`;
-
-	const modalBody = addModal('modal-body', modal);
-
-	addInputFields(modalBody, cols);
-
-	const modalFooter = addModal('modal-footer', modal);
-
-	modalFooter.innerHTML = '<button type="button" class="btn btn-outline-success" data-close-button >Сохранить<button/>' +
-		'<button type="button" class="btn btn-outline-danger" data-close-button >Отменить<button/>';
+	return popupWindow;
 }
 
-function addModal(name, parent) {
-	const modalElement = appendElement(parent, 'div');
-	modalElement.classList.add(name);
+function createAddUserPopupHeader(headerText) {
+	const addUserHeader = document.createElement('div');
+	const addUserHeaderText = document.createElement('h2');
 
-	return modalElement;
+	addUserHeader.classList.add('modal-header');
+
+	addUserHeaderText.textContent = headerText;
+	addUserHeader.append(addUserHeaderText);
+
+	return addUserHeader;
 }
 
-function addInputFields(parent, cols) {
-	const filterCols = cols.filter((col) => col.editable);
-	filterCols.forEach((col) => {
-		addInputField(parent, col);
-	})
+function createAddUserPopupBody(columns) {
+	const addUserBody = document.createElement('div');
+	console.log(1);
+	addUserBody.classList.add('modal-body');
+
+	columns.forEach(col => {
+		if (col.editable) {
+			addUserBody.append(createInputField(col));
+		}
+	});
+
+	return addUserBody;
 }
 
-function addInputField(parent, col) {
-	const label = appendElement(parent, 'label');
-	label.innerText = col.title + ':';
-	label.setAttribute('for', col.value);
-	const input = appendElement(label, 'input');
-	input.setAttribute('id', col.value);
-	if (col.value === 'avatar') {
-		input.setAttribute('type', 'date');
-	} else {
-		input.setAttribute('type', 'text');
-	}
+function createAddUserPopupFooter(popupWindow, {onSaveEventListener, onCloseEventListener}) {
+	const addUserFooter = document.createElement('div');
+	const saveButton = document.createElement('button');
+	const closeButton = document.createElement('button');
+
+	addUserFooter.classList.add('modal-footer');
+
+	saveButton.classList.add('btn', 'btn-outline-success');
+	saveButton.textContent = 'Сохранить';
+	saveButton.onclick = onSaveEventListener;
+
+	closeButton.classList.add('btn', 'btn-outline-danger');
+	closeButton.textContent = 'Отменить';
+	closeButton.onclick = onCloseEventListener;
+
+	addUserFooter.append(saveButton, closeButton);
+
+	return addUserFooter;
 }
 
-function addUserButton(name, parent, id, btnStyleClass) {
-	const button = document.createElement('button');
+function createInputField(col) {
+	const label = document.createElement('label');
+	const input = document.createElement('input');
 
-	button.innerText = name;
-	button.setAttribute('type', 'button');
-	button.classList.add('btn');
-	button.classList.add(btnStyleClass);
-	button.dataset.modalTarget = '#' + id;
+	input.id = col.value;
+	input.type = col.value === 'birthday' ? 'date' : 'text';
+	input.required = true;
 
-	parent.append(button);
+	label.textContent = col.title + ':';
+	label.append(input);
 
-	return button;
+	return label;
 }
 
 function createSearchField(parent) {
@@ -112,60 +118,64 @@ function createSearchField(parent) {
 	const input = document.createElement('input');
 	const searchId = 'table-search';
 
-	input.setAttribute('type', 'text');
+	input.type = 'text';
 
-	div.setAttribute('id', searchId);
+	div.id = searchId;
 	div.classList.add(searchId);
-	div.appendChild(input);
+	div.append(input);
 
-	parent.appendChild(div);
+	parent.append(div);
 }
 
-function createTable(apiURL, config, parent, users) {
+async function createTable(apiURL, config, parent) {
 
 	if (!config) return;
 
 	const table = document.createElement('table');
 
-	parent.appendChild(table);
+	parent.append(table);
 
 	createTableHead(config, table);
 
-	if (!users.length) return;
+	let users = await getData(apiURL);
 
-	const type = typeof users[0][config.defaultSort.field];
-	const value = config.defaultSort.field;
-	const state = sorts[config.defaultSort.state];
-	const sortUsers = sortBy(type, value, state, users);
+	const sortType = typeof users[0][config.defaultSort.field];
+	const sortValue = config.defaultSort.field;
+	const sortState = sorts[config.defaultSort.state];
+	const sortUsers = sortBy(sortType, sortValue, sortState, users);
 
-	renderTable(apiURL, config.columns, table, sortUsers);
+	renderTableBody(config.columns, table, sortUsers, apiURL);
 
 	const buttons = table.tHead.querySelectorAll('button');
 	const input = parent.querySelector('input');
 
-	buttons.forEach(btn => {
-		addListener(btn, 'click', () => {
+	buttons.forEach( btn => {
+		btn.addEventListener('click',  async () => {
 			const sortType = changeSort(parent, btn);
+			users = await getData(apiURL);
 			const sortUsers = sortBy(btn.dataset.type, btn.dataset.value, sortType, users);
-			renderTable(apiURL, config.columns, table, sortUsers);
+			renderTableBody(config.columns, table, sortUsers, apiURL);
 		});
 	});
 
-	addListener(input, 'input', () => {
+	input.addEventListener('input', async () => {
+		users = await getData(apiURL);
 		const filterUser = findBy(users, config.search, input.value);
-		renderTable(apiURL, config.columns, table, filterUser);
+		renderTableBody(config.columns, table, filterUser, apiURL);
 	});
+	return table;
 }
 
 function createTableHead(config, table) {
 	const thead = document.createElement('thead');
 	const row = document.createElement('tr');
 
-	table.appendChild(thead);
-	thead.appendChild(row);
+	table.append(thead);
+	thead.append(row);
 
 	config.columns.forEach(col => {
-		const cell = appendElement(row, 'th');
+		const cell = document.createElement('th');
+		row.append(cell);
 		if (col.type) {
 			cell.classList.add('align-right');
 		}
@@ -173,34 +183,36 @@ function createTableHead(config, table) {
 		if (col.sortable) {
 			const type = !col.type ? 'string' : col.type;
 			const sortClass = col.value === config.defaultSort.field ? sorts[config.defaultSort.state] : sorts['no'];
+			// fixme: make it up with creating dom elements
 			cell.innerHTML += `<button type="button" data-type="${type}" data-value="${col.value}"><i class="${sortClass}"></i></button>`;
 		}
 	});
 }
 
-function appendElement(parent, name) {
-	return parent.appendChild(document.createElement(name));
-}
-
-export function renderTable(apiURL, cols, table, users) {
+function renderTableBody(cols, table, users, apiURL = '') {
+	// FIXME: change creating tbody
 	let tbody = table.querySelector('tbody');
 
 	if (tbody) {
 		tbody.innerHTML = '';
 	} else {
-		tbody = appendElement(table, 'tbody');
+		tbody = document.createElement('tbody');
 	}
 
-	let row, cell;
+	table.append(tbody);
 
 	users.forEach((user, _index) => {
-		row = appendElement(tbody, 'tr');
-		cell = appendElement(row, 'td');
+		const row = document.createElement('tr');
+		tbody.append(row);
+		let cell = document.createElement('td');
+		row.append(cell);
+
 		cell.innerText = _index + 1;
 
 		cols.forEach((col) => {
 			if (col.visible) {
-				cell = appendElement(row, 'td');
+				cell = document.createElement('td');
+				row.append(cell);
 				cell.innerText = user[col.value];
 				if (col.type === 'number') {
 					cell.classList.add('align-right');
@@ -208,18 +220,15 @@ export function renderTable(apiURL, cols, table, users) {
 				if (typeof col.value === 'function') {
 					cell.innerText = col.value(user);
 				} else if (col.value === 'avatar') {
-					cell.innerHTML = `<img src="${user[col.value]}" alt="image"/>`;
+					cell.innerHTML = `<img width="64px" height="64px" src="${user[col.value]}" alt="image" />`;
 					cell.classList.add('align-center');
 				}
 				if (col.value === 'acts') {
-					cell.innerHTML = addButton('Удалить', user.id);
+					cell.innerHTML = `<button data-id="${user.id}">Удалить</button>`;
+					const addUserButton = document.querySelector('#add-user');
+					cell.innerHTML += `<button data-id="${user.id}" data-modal-target="${addUserButton.dataset.modalTarget}">Редактировать</button>`;
 					const button = cell.querySelector('button');
-					// todo: вынести
-					button.addEventListener('click', async () => {
-						users = await deleteUserById(apiURL, user.id)
-							.then(() => getData(apiURL));
-						renderTable(apiURL, cols, table, users);
-					});
+					addDeleteUserListener(button, apiURL, cols, table, user.id);
 					cell.classList.add('align-center');
 				}
 			}
@@ -227,40 +236,11 @@ export function renderTable(apiURL, cols, table, users) {
 	});
 }
 
-async function getData(apiURL) {
-	return fetch(apiURL)
-		.then((res) => res.json())
-		.catch((error) => console.log(error));
-}
-
-async function deleteUserById(apiURL, userId) {
-	return fetch(`${apiURL}/${userId}`, {method: 'DELETE'});
-}
-
-function addButton(name, userId) {
-	return `<button type="button" data-id="${userId}">${name}</button>`;
-}
-
-function sortBy(type, value, sortType, data) {
-	const sortData = [...data];
-	const coef = sortType.includes('up') ? 1 : sortType.includes('down') ? -1 : 0;
-
-	if (type === 'number') {
-		sortData.sort((u1, u2) => {
-			return (u1[value] - u2[value]) * coef;
-		})
-	} else if (type === 'string') {
-		sortData.sort((u1, u2) => {
-			return (u1[value].localeCompare(u2[value])) * coef;
-		})
-	}
-	return sortData;
-}
-
-function setUnusedIconsDefault(icons) {
-	icons.forEach((icon) => {
-		icon.setAttribute('class', sorts['no']);
-	})
+function addDeleteUserListener(button, apiURL, cols, table, id) {
+	button.addEventListener('click', async () => {
+		const updatedUsers = await deleteUserById(apiURL, id).then(() => getData(apiURL));
+		renderTableBody(cols, table, updatedUsers, apiURL);
+	});
 }
 
 function changeSort(parent, button) {
@@ -269,27 +249,46 @@ function changeSort(parent, button) {
 	const currentIcon = button.querySelector('i');
 	const currentSortIcon = currentIcon.getAttribute('class');
 
-	setUnusedIconsDefault(icons);
+	icons.forEach((icon) => {
+		icon.className = sorts['no'];
+	});
 
 	switch (currentSortIcon) {
 		case 'fas fa-sort':
-			currentIcon.setAttribute('class', sorts['ascending']);
+			currentIcon.className = sorts['ascending'];
 			break;
 		case 'fas fa-sort-up':
-			currentIcon.setAttribute('class', sorts['descending']);
+			currentIcon.className = sorts['descending'];
 			break;
 		case 'fas fa-sort-down':
-			currentIcon.setAttribute('class', sorts['no']);
+			currentIcon.className = sorts['no'];
 			break;
 	}
 
-	return currentIcon.getAttribute('class');
+	return currentIcon.className;
 }
 
-function findBy(users, search, query) {
-	if (query === "") return users;
+function sortBy(type, value, sortType, data) {
+	const sortData = [...data];
+	// sortBy depends on sortType - it's not pure function
+	const coef = sortType.includes('up') ? 1
+		: sortType.includes('down') ? -1
+			: 0;
 
-	const {fields, filters} = search;
+	if (type === 'number') {
+		sortData.sort((u1, u2) => {
+			return (u1[value] - u2[value]) * coef;
+		});
+	} else if (type === 'string') {
+		sortData.sort((u1, u2) => {
+			return (u1[value].localeCompare(u2[value])) * coef;
+		});
+	}
+	return sortData;
+}
+
+function findBy(users, { fields, filters }, query) {
+	if (query === "") return users;
 
 	return users.filter((user) => {
 		return fields.filter((field) => {
@@ -300,6 +299,80 @@ function findBy(users, search, query) {
 	});
 }
 
-function addListener(element, event, callback) {
-	element.addEventListener(event, callback);
+async function getData(apiURL) {
+	return fetch(apiURL)
+		.then((res) => res.json())
+		.catch((error) => console.log(error));
 }
+
+async function deleteUserById(apiURL, userId) {
+	return fetch(`${apiURL}/${userId}`, {method: 'DELETE'})
+		.catch((error) => console.log(error));
+}
+
+async function updateUserById(apiURL, userId, updatedUser) {
+	const data = {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(updatedUser)
+	}
+	return fetch(`${apiURL}/${userId}`, data)
+		.catch((error) => console.log(error));
+}
+
+async function addUserById(apiURL, id, user) {
+	const data = {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(user)
+	}
+	return fetch(`${apiURL}/${id}`, data)
+		.catch((error) => console.log(error));
+}
+
+async function saveUser(popupWindow, apiURL, table, users, inputs, columns) {
+	const id = +users.reduce((prev, current) => (prev.id > current.id) ? prev.id : current.id) + 1;
+
+	const newUser = {
+		id,
+		...inputs
+	};
+	console.log(newUser);
+	for (const prop in newUser) {
+		if (!newUser[prop])
+			return;
+	}
+	const copyUsers = addUserById(apiURL, id, newUser).then(() => getData(apiURL));
+	renderTableBody(columns, table, copyUsers, apiURL);
+	closeModal(popupWindow);
+}
+
+function calculateAge(birthday) {
+	const today = new Date();
+	const birthDate = new Date(birthday);
+	const m = today.getMonth() - birthDate.getMonth();
+	let age = today.getFullYear() - birthDate.getFullYear();
+	if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+		age--;
+	}
+	return age;
+}
+
+function toKeyboardLayout(str) {
+	const associativeArray = {
+		"q": "й", "w": "ц", "e": "у", "r": "к", "t": "е", "y": "н", "u": "г",
+		"i": "ш", "o": "щ", "p": "з", "[": "х", "]": "ъ", "a": "ф", "s": "ы",
+		"d": "в", "f": "а", "g": "п", "h": "р", "j": "о", "k": "л", "l": "д",
+		";": "ж", "'": "э", "z": "я", "x": "ч", "c": "с", "v": "м", "b": "и",
+		"n": "т", "m": "ь", ",": "б", ".": "ю", "/": "."
+	};
+	return str.replace(/[A-z\/,.;\]\[]/g, (x) => {
+		return associativeArray[x];
+	});
+}
+
+export { DataTable, calculateAge, toKeyboardLayout };

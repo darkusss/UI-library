@@ -13,9 +13,6 @@
   <link rel="stylesheet/less" type="text/css" href="styles/burger.less"/>
   <link rel="stylesheet/less" type="text/css" href="styles/slider.less"/>
   <link rel="stylesheet/less" type="text/css" href="styles/dataTable.less"/>
-
-	<script type="module" src="js/table.js" async></script>
-	<script type="module" src="js/dataTable.js" async></script>
 </head>
 <body>
 
@@ -76,21 +73,21 @@
       <img src="img/carousel3.jpg" alt="img3">
       <img src="img/carousel4.jpg" alt="img4">
     </div>
-    <button type="button" id="prevButton"><i class="fas fa-arrow-left fa-2x"></i></button>
-    <button type="button" id="nextButton"><i class="fas fa-arrow-right fa-2x"></i></button>
+    <button id="prevButton"><i class="fas fa-arrow-left fa-2x"></i></button>
+    <button id="nextButton"><i class="fas fa-arrow-right fa-2x"></i></button>
   </div>
 </section>
 
 <section class="table-section">
   <div id="user-table">
-		<button type="button" class="btn btn-outline-success" data-modal-target>Добавить</button>
+		<button class="btn btn-outline-success" id="add-user" data-modal-target="#add-user-popup">Добавить</button>
 	</div>
 </section>
 
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/3.9.0/less.min.js"></script>
 <script src="https://kit.fontawesome.com/a92211bf3b.js" crossorigin="anonymous"></script>
-<script src="js/modal.js"></script>
+<script type="module" src="js/main.js"></script>
 <script src="js/burger.js"></script>
 <script src="js/slider.js"></script>
 

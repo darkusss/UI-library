@@ -45,10 +45,16 @@
 
 .modal-body {
   padding: 10px;
+	display: flex;
+	flex-flow: column wrap;
+	align-items: center;
 }
 
 .modal-footer {
   padding: 10px;
+	border-top: 1px solid black;
+	display: flex;
+	justify-content: space-between;
 }
 
 #overlay {
@@ -58,11 +64,9 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, .5);
-  opacity: 0;
-  pointer-events: none;
+  visibility: hidden;
 }
 
 #overlay.active {
-  opacity: 1;
-  pointer-events: all;
+  visibility: visible;
 }
