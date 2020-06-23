@@ -1,4 +1,5 @@
-import {closeModal} from './modal.js';
+import { closeModal } from './modal.js';
+import { getUsers, deleteUserById, updateUserById, addUserById } from './service.js'
 
 const sorts = {
 	no: 'fas fa-sort',
@@ -11,7 +12,7 @@ async function DataTable(config, data) {
 	const addUserButton = document.querySelector('#add-user');
 	const modalId = addUserButton.dataset.modalTarget.slice(1);
 
-	const users = !data && config.apiUrl ? await getData(config.apiUrl) : [...data];
+	const users = !data && config.apiUrl ? await getUsers(config.apiUrl) : [...data];
 
 	if (config.search) createSearchField(parent);
 	
@@ -44,100 +45,16 @@ async function DataTable(config, data) {
 	parent.append(popUpWindow);
 }
 
-function createPopupWindow(id) {
-	const popupWindow = document.createElement('div');
-
-	popupWindow.classList.add('modal');
-	popupWindow.id = id;
-
-	return popupWindow;
-}
-
-function createAddUserPopupHeader(headerText) {
-	const addUserHeader = document.createElement('div');
-	const addUserHeaderText = document.createElement('h2');
-
-	addUserHeader.classList.add('modal-header');
-
-	addUserHeaderText.textContent = headerText;
-	addUserHeader.append(addUserHeaderText);
-
-	return addUserHeader;
-}
-
-function createAddUserPopupBody(columns) {
-	const addUserBody = document.createElement('div');
-	console.log(1);
-	addUserBody.classList.add('modal-body');
-
-	columns.forEach(col => {
-		if (col.editable) {
-			addUserBody.append(createInputField(col));
-		}
-	});
-
-	return addUserBody;
-}
-
-function createAddUserPopupFooter(popupWindow, {onSaveEventListener, onCloseEventListener}) {
-	const addUserFooter = document.createElement('div');
-	const saveButton = document.createElement('button');
-	const closeButton = document.createElement('button');
-
-	addUserFooter.classList.add('modal-footer');
-
-	saveButton.classList.add('btn', 'btn-outline-success');
-	saveButton.textContent = 'Сохранить';
-	saveButton.onclick = onSaveEventListener;
-
-	closeButton.classList.add('btn', 'btn-outline-danger');
-	closeButton.textContent = 'Отменить';
-	closeButton.onclick = onCloseEventListener;
-
-	addUserFooter.append(saveButton, closeButton);
-
-	return addUserFooter;
-}
-
-function createInputField(col) {
-	const label = document.createElement('label');
-	const input = document.createElement('input');
-
-	input.id = col.value;
-	input.type = col.value === 'birthday' ? 'date' : 'text';
-	input.required = true;
-
-	label.textContent = col.title + ':';
-	label.append(input);
-
-	return label;
-}
-
-function createSearchField(parent) {
-	const div = document.createElement('div');
-	const input = document.createElement('input');
-	const searchId = 'table-search';
-
-	input.type = 'text';
-
-	div.id = searchId;
-	div.classList.add(searchId);
-	div.append(input);
-
-	parent.append(div);
-}
-
 async function createTable(apiURL, config, parent) {
 
 	if (!config) return;
 
 	const table = document.createElement('table');
-
 	parent.append(table);
 
 	createTableHead(config, table);
 
-	let users = await getData(apiURL);
+	let users = await getUsers(apiURL);
 
 	const sortType = typeof users[0][config.defaultSort.field];
 	const sortValue = config.defaultSort.field;
@@ -151,15 +68,15 @@ async function createTable(apiURL, config, parent) {
 
 	buttons.forEach( btn => {
 		btn.addEventListener('click',  async () => {
-			const sortType = changeSort(parent, btn);
-			users = await getData(apiURL);
+			const sortType = currentSortType(parent, btn);
+			users = await getUsers(apiURL);
 			const sortUsers = sortBy(btn.dataset.type, btn.dataset.value, sortType, users);
 			renderTableBody(config.columns, table, sortUsers, apiURL);
 		});
 	});
 
 	input.addEventListener('input', async () => {
-		users = await getData(apiURL);
+		users = await getUsers(apiURL);
 		const filterUser = findBy(users, config.search, input.value);
 		renderTableBody(config.columns, table, filterUser, apiURL);
 	});
@@ -176,10 +93,11 @@ function createTableHead(config, table) {
 	config.columns.forEach(col => {
 		const cell = document.createElement('th');
 		row.append(cell);
-		if (col.type) {
+		cell.innerText = col.title;
+
+		if (col.type === 'number') {
 			cell.classList.add('align-right');
 		}
-		cell.innerText = col.title;
 		if (col.sortable) {
 			const type = !col.type ? 'string' : col.type;
 			const sortClass = col.value === config.defaultSort.field ? sorts[config.defaultSort.state] : sorts['no'];
@@ -236,15 +154,97 @@ function renderTableBody(cols, table, users, apiURL = '') {
 	});
 }
 
+function createPopupWindow(id) {
+	const popupWindow = document.createElement('div');
+
+	popupWindow.classList.add('modal');
+	popupWindow.id = id;
+
+	return popupWindow;
+}
+
+function createAddUserPopupHeader(headerText) {
+	const addUserHeader = document.createElement('div');
+	const addUserHeaderText = document.createElement('h2');
+
+	addUserHeader.classList.add('modal-header');
+
+	addUserHeaderText.textContent = headerText;
+	addUserHeader.append(addUserHeaderText);
+
+	return addUserHeader;
+}
+
+function createAddUserPopupBody(columns) {
+	const addUserBody = document.createElement('div');
+	addUserBody.classList.add('modal-body');
+
+	columns.forEach(col => {
+		if (col.editable) {
+			const { label, input } = createInputField(col);
+			addUserBody.append(label, input);
+		}
+	});
+
+	return addUserBody;
+}
+
+function createAddUserPopupFooter(popupWindow, {onSaveEventListener, onCloseEventListener}) {
+	const addUserFooter = document.createElement('div');
+	const saveButton = document.createElement('button');
+	const closeButton = document.createElement('button');
+
+	addUserFooter.classList.add('modal-footer');
+
+	saveButton.classList.add('btn', 'btn-outline-success');
+	saveButton.textContent = 'Сохранить';
+	saveButton.onclick = onSaveEventListener;
+
+	closeButton.classList.add('btn', 'btn-outline-danger');
+	closeButton.textContent = 'Отменить';
+	closeButton.onclick = onCloseEventListener;
+
+	addUserFooter.append(saveButton, closeButton);
+
+	return addUserFooter;
+}
+
+function createInputField(col) {
+	const label = document.createElement('label');
+	const input = document.createElement('input');
+
+	input.id = col.value;
+	input.type = col.value === 'birthday' ? 'date' : 'text';
+	input.required = true;
+
+	label.htmlFor = col.value;
+	label.textContent = col.title + ':';
+
+	return { label, input };
+}
+
+function createSearchField(parent) {
+	const div = document.createElement('div');
+	const input = document.createElement('input');
+	const searchId = 'table-search';
+
+	input.type = 'text';
+
+	div.id = searchId;
+	div.classList.add(searchId);
+	div.append(input);
+
+	parent.append(div);
+}
+
 function addDeleteUserListener(button, apiURL, cols, table, id) {
 	button.addEventListener('click', async () => {
-		const updatedUsers = await deleteUserById(apiURL, id).then(() => getData(apiURL));
+		const updatedUsers = await deleteUserById(apiURL, id).then(() => getUsers(apiURL));
 		renderTableBody(cols, table, updatedUsers, apiURL);
 	});
 }
 
-function changeSort(parent, button) {
-
+function currentSortType(parent, button) {
 	const icons = parent.querySelectorAll('button i');
 	const currentIcon = button.querySelector('i');
 	const currentSortIcon = currentIcon.getAttribute('class');
@@ -299,42 +299,7 @@ function findBy(users, { fields, filters }, query) {
 	});
 }
 
-async function getData(apiURL) {
-	return fetch(apiURL)
-		.then((res) => res.json())
-		.catch((error) => console.log(error));
-}
-
-async function deleteUserById(apiURL, userId) {
-	return fetch(`${apiURL}/${userId}`, {method: 'DELETE'})
-		.catch((error) => console.log(error));
-}
-
-async function updateUserById(apiURL, userId, updatedUser) {
-	const data = {
-		method: 'PUT',
-		headers: {
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify(updatedUser)
-	}
-	return fetch(`${apiURL}/${userId}`, data)
-		.catch((error) => console.log(error));
-}
-
-async function addUserById(apiURL, id, user) {
-	const data = {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify(user)
-	}
-	return fetch(`${apiURL}/${id}`, data)
-		.catch((error) => console.log(error));
-}
-
-async function saveUser(popupWindow, apiURL, table, users, inputs, columns) {
+async function saveUser(popupWindow, apiURL, table, users, inputs, columns, ) {
 	const id = +users.reduce((prev, current) => (prev.id > current.id) ? prev.id : current.id) + 1;
 
 	const newUser = {
@@ -346,7 +311,7 @@ async function saveUser(popupWindow, apiURL, table, users, inputs, columns) {
 		if (!newUser[prop])
 			return;
 	}
-	const copyUsers = addUserById(apiURL, id, newUser).then(() => getData(apiURL));
+	const copyUsers = addUserById(apiURL, id, newUser).then(() => getUsers(apiURL));
 	renderTableBody(columns, table, copyUsers, apiURL);
 	closeModal(popupWindow);
 }
