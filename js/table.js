@@ -1,5 +1,5 @@
-import { closeModal } from './modal.js';
-import { getUsers, deleteUserById, updateUserById, addUserById } from './service.js'
+import {closeModal} from './modal.js';
+import {getUsers, deleteUserById, updateUserById, addUserById} from './api.js'
 
 const sorts = {
 	no: 'fas fa-sort',
@@ -7,32 +7,42 @@ const sorts = {
 	descending: 'fas fa-sort-down'
 };
 
+const addUserButton = document.querySelector('#add-user');
+const modalId = addUserButton.dataset.modalTarget;
+
 async function DataTable(config, data) {
 	const parent = document.querySelector(config.parent);
-	const addUserButton = document.querySelector('#add-user');
-	const modalId = addUserButton.dataset.modalTarget.slice(1);
 
 	const users = !data && config.apiUrl ? await getUsers(config.apiUrl) : [...data];
 
 	if (config.search) createSearchField(parent);
-	
+
 	const table = await createTable(config.apiUrl, config, parent);
 
-	const popUpWindow = createPopupWindow(modalId);
+	const form = document.createElement('form');
+
+	const popUpWindow = createPopupWindow(modalId.slice(1));
 	const addUserPopupHeader = createAddUserPopupHeader('Введите данные');
 	const addUserPopupBody = createAddUserPopupBody(config.columns);
 
 	const buttonEventListeners = {
 		onSaveEventListener: () => {
-			const popupDOMInputs = {};
+			const popupDOMInputs = config.columns
+				.filter(col => col.editable)
+				.reduce((obj, col) => {
+					const { value } = document.getElementById(col.value);
+					obj[col.value] = value;
+					return obj;
+				}, {});
 
-			config.columns.forEach(column => {
-				if (column.editable) {
-					const { value } = document.getElementById(column.value);
-					popupDOMInputs[column.value] = value;
-				}
-			});
+			// console.log(popupDOMInputs);
 
+			// config.columns.forEach(column => {
+			// 	if (column.editable) {
+			// 		const {value} = document.getElementById(column.value);
+			// 		popupDOMInputs[column.value] = value;
+			// 	}
+			// });
 			saveUser(popUpWindow, config.apiUrl, table, users, popupDOMInputs, config.columns)
 		},
 		onCloseEventListener: () => closeModal(popUpWindow)
@@ -40,7 +50,8 @@ async function DataTable(config, data) {
 
 	const addUserPopupFooter = createAddUserPopupFooter(popUpWindow, buttonEventListeners);
 
-	popUpWindow.append(addUserPopupHeader, addUserPopupBody, addUserPopupFooter);
+	popUpWindow.append(form);
+	form.append(addUserPopupHeader, addUserPopupBody, addUserPopupFooter);
 
 	parent.append(popUpWindow);
 }
@@ -66,8 +77,8 @@ async function createTable(apiURL, config, parent) {
 	const buttons = table.tHead.querySelectorAll('button');
 	const input = parent.querySelector('input');
 
-	buttons.forEach( btn => {
-		btn.addEventListener('click',  async () => {
+	buttons.forEach(btn => {
+		btn.addEventListener('click', async () => {
 			const sortType = currentSortType(parent, btn);
 			users = await getUsers(apiURL);
 			const sortUsers = sortBy(btn.dataset.type, btn.dataset.value, sortType, users);
@@ -143,8 +154,7 @@ function renderTableBody(cols, table, users, apiURL = '') {
 				}
 				if (col.value === 'acts') {
 					cell.innerHTML = `<button data-id="${user.id}">Удалить</button>`;
-					const addUserButton = document.querySelector('#add-user');
-					cell.innerHTML += `<button data-id="${user.id}" data-modal-target="${addUserButton.dataset.modalTarget}">Редактировать</button>`;
+					cell.innerHTML += `<button data-id="${user.id}" data-modal-target="${modalId}">Редактировать</button>`;
 					const button = cell.querySelector('button');
 					addDeleteUserListener(button, apiURL, cols, table, user.id);
 					cell.classList.add('align-center');
@@ -167,9 +177,10 @@ function createAddUserPopupHeader(headerText) {
 	const addUserHeader = document.createElement('div');
 	const addUserHeaderText = document.createElement('h2');
 
+
 	addUserHeader.classList.add('modal-header');
 
-	addUserHeaderText.textContent = headerText;
+	addUserHeaderText.innerText = headerText;
 	addUserHeader.append(addUserHeaderText);
 
 	return addUserHeader;
@@ -177,11 +188,12 @@ function createAddUserPopupHeader(headerText) {
 
 function createAddUserPopupBody(columns) {
 	const addUserBody = document.createElement('div');
+
 	addUserBody.classList.add('modal-body');
 
 	columns.forEach(col => {
 		if (col.editable) {
-			const { label, input } = createInputField(col);
+			const {label, input} = createInputField(col);
 			addUserBody.append(label, input);
 		}
 	});
@@ -198,7 +210,10 @@ function createAddUserPopupFooter(popupWindow, {onSaveEventListener, onCloseEven
 
 	saveButton.classList.add('btn', 'btn-outline-success');
 	saveButton.textContent = 'Сохранить';
-	saveButton.onclick = onSaveEventListener;
+	saveButton.addEventListener('click', (event) => {
+		event.preventDefault();
+		onSaveEventListener();
+	});
 
 	closeButton.classList.add('btn', 'btn-outline-danger');
 	closeButton.textContent = 'Отменить';
@@ -220,7 +235,7 @@ function createInputField(col) {
 	label.htmlFor = col.value;
 	label.textContent = col.title + ':';
 
-	return { label, input };
+	return {label, input};
 }
 
 function createSearchField(parent) {
@@ -287,7 +302,7 @@ function sortBy(type, value, sortType, data) {
 	return sortData;
 }
 
-function findBy(users, { fields, filters }, query) {
+function findBy(users, {fields, filters}, query) {
 	if (query === "") return users;
 
 	return users.filter((user) => {
@@ -299,19 +314,20 @@ function findBy(users, { fields, filters }, query) {
 	});
 }
 
-async function saveUser(popupWindow, apiURL, table, users, inputs, columns, ) {
+async function saveUser(popupWindow, apiURL, table, users, inputs, columns,) {
 	const id = +users.reduce((prev, current) => (prev.id > current.id) ? prev.id : current.id) + 1;
 
 	const newUser = {
 		id,
 		...inputs
 	};
-	console.log(newUser);
+	// console.log(newUser);
 	for (const prop in newUser) {
 		if (!newUser[prop])
 			return;
 	}
-	const copyUsers = addUserById(apiURL, id, newUser).then(() => getUsers(apiURL));
+
+	const copyUsers = await addUserById(apiURL, id, newUser).then(() => getUsers(apiURL));
 	renderTableBody(columns, table, copyUsers, apiURL);
 	closeModal(popupWindow);
 }
@@ -340,4 +356,4 @@ function toKeyboardLayout(str) {
 	});
 }
 
-export { DataTable, calculateAge, toKeyboardLayout };
+export {DataTable, calculateAge, toKeyboardLayout};

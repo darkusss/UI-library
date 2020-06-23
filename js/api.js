@@ -1,4 +1,4 @@
-async function addUserById(apiURL, id, user) {
+function addUserById(apiURL, id, user) {
 	const data = {
 		method: 'POST',
 		headers: {
@@ -10,7 +10,7 @@ async function addUserById(apiURL, id, user) {
 		.catch((error) => console.log(error));
 }
 
-async function updateUserById(apiURL, userId, updatedUser) {
+function updateUserById(apiURL, userId, updatedUser) {
 	const data = {
 		method: 'PUT',
 		headers: {
@@ -22,13 +22,13 @@ async function updateUserById(apiURL, userId, updatedUser) {
 		.catch((error) => console.log(error));
 }
 
-async function getUsers(apiURL) {
+function getUsers(apiURL) {
 	return fetch(apiURL)
 		.then((res) => res.json())
 		.catch((error) => console.log(error));
 }
 
-async function deleteUserById(apiURL, userId) {
+function deleteUserById(apiURL, userId) {
 	return fetch(`${apiURL}/${userId}`, {method: 'DELETE'})
 		.catch((error) => console.log(error));
 }
