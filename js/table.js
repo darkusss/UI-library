@@ -1,4 +1,3 @@
-import { closeModal } from './modal.js';
 import {getUsers, deleteUserById, updateUserById, addUserById} from './api.js'
 
 const sorts = {
@@ -6,6 +5,10 @@ const sorts = {
 	ascending: 'fas fa-sort-up',
 	descending: 'fas fa-sort-down'
 };
+
+// TODO: сделать кнопку редактирования
+// TODO: сделать нотификации
+// TODO: (опционально) изменить всякие чтуки
 
 const addUserButton = document.querySelector('#add-user');
 const modalId = addUserButton.dataset.modalTarget;
@@ -25,22 +28,21 @@ async function DataTable(config, data) {
 	const addUserPopupHeader = createAddUserPopupHeader('Введите данные');
 	const addUserPopupBody = createAddUserPopupBody(config.columns);
 
-	const buttonEventListeners = {
-		onSaveEventListener: () => {
-			const popupDOMInputs = config.columns
-				.filter(col => col.editable)
-				.reduce((obj, col) => {
-					const { value } = document.getElementById(col.value);
-					obj[col.value] = value;
-					return obj;
-				}, {});
-			
-			saveUser(popUpWindow, config.apiUrl, table, users, popupDOMInputs, config.columns)
-		},
-		onCloseEventListener: () => closeModal(popUpWindow)
-	};
 
-	const addUserPopupFooter = createAddUserPopupFooter(popUpWindow, buttonEventListeners);
+
+	const onSaveEventListener = () => {
+		const popupDOMInputs = config.columns
+			.filter(col => col.editable)
+			.reduce((obj, col) => {
+				const {value} = document.getElementById(col.value);
+				obj[col.value] = value;
+				return obj;
+			}, {});
+
+		saveUser(popUpWindow, config.apiUrl, table, users, popupDOMInputs, config.columns)
+	}
+
+	const addUserPopupFooter = createAddUserPopupFooter(popUpWindow, onSaveEventListener);
 
 	popUpWindow.append(form);
 	form.append(addUserPopupHeader, addUserPopupBody, addUserPopupFooter);
@@ -104,14 +106,12 @@ function createTableHead(config, table) {
 		if (col.sortable) {
 			const type = !col.type ? 'string' : col.type;
 			const sortClass = col.value === config.defaultSort.field ? sorts[config.defaultSort.state] : sorts['no'];
-			// fixme: make it up with creating dom elements
 			cell.innerHTML += `<button type="button" data-type="${type}" data-value="${typeof col.value === 'function' ? 'function' : col.value}"><i class="${sortClass}"></i></button>`;
 		}
 	});
 }
 
 function renderTableBody(cols, table, users, apiURL = '') {
-	// FIXME: change creating tbody
 	let tbody = table.querySelector('tbody');
 
 	if (tbody) {
@@ -145,10 +145,11 @@ function renderTableBody(cols, table, users, apiURL = '') {
 					cell.classList.add('align-center');
 				}
 				if (col.value === 'acts') {
-					cell.innerHTML = `<button data-id="${user.id}">Удалить</button>`;
-					cell.innerHTML += `<button data-id="${user.id}" data-modal-target="${modalId}">Редактировать</button>`;
-					const button = cell.querySelector('button');
-					addDeleteUserListener(button, apiURL, cols, table, user.id);
+					cell.innerHTML = `<button class="btn btn-danger" data-id="${user.id}">Удалить</button>`;
+					cell.innerHTML += `<button class="btn btn-warning" data-id="${user.id}" data-modal-target="${modalId}">Редактировать</button>`;
+					const deleteUserButton = cell.querySelector('.btn-danger');
+					const updateUserButton = cell.querySelector('.btn-danger');
+					addDeleteUserListener(deleteUserButton, apiURL, cols, table, user.id);
 					cell.classList.add('align-center');
 				}
 			}
@@ -193,7 +194,7 @@ function createAddUserPopupBody(columns) {
 	return addUserBody;
 }
 
-function createAddUserPopupFooter(popupWindow, {onSaveEventListener, onCloseEventListener}) {
+function createAddUserPopupFooter(popupWindow, onSaveEventListener) {
 	const addUserFooter = document.createElement('div');
 	const saveButton = document.createElement('button');
 	const closeButton = document.createElement('button');
@@ -206,10 +207,11 @@ function createAddUserPopupFooter(popupWindow, {onSaveEventListener, onCloseEven
 		event.preventDefault();
 		onSaveEventListener();
 	});
+	saveButton.dataset.closeButton = '';
 
 	closeButton.classList.add('btn', 'btn-outline-danger');
 	closeButton.textContent = 'Отменить';
-	closeButton.onclick = onCloseEventListener;
+	closeButton.dataset.closeButton = '';
 
 	addUserFooter.append(saveButton, closeButton);
 
@@ -222,7 +224,8 @@ function createInputField(col) {
 
 	input.id = col.value;
 	input.type = col.value === 'birthday' ? 'date' : 'text';
-	input.required = true;
+	if (col.value !== 'avatar')
+		input.required = true;
 
 	label.htmlFor = col.value;
 	label.textContent = col.title + ':';
@@ -282,12 +285,9 @@ function sortBy(type, value, sortType, data) {
 		: sortType.includes('down') ? -1
 			: 0;
 
-	console.log(value);
 	if (type === 'number') {
 		sortData.sort((u1, u2) => {
-			// FIXME: FIX SORT AGE
 			if (value === 'function') {
-				console.log(1);
 				return (calculateAge(u1.birthday) - calculateAge(u2.birthday)) * coef;
 			}
 			return (u1[value] - u2[value]) * coef;
@@ -325,8 +325,7 @@ async function saveUser(popupWindow, apiURL, table, users, inputs, columns) {
 		await addUserById(apiURL, newUser);
 		const copyUsers = await getUsers(apiURL);
 		renderTableBody(columns, table, copyUsers, apiURL);
-		closeModal(popupWindow);
-	} catch(error) {
+	} catch (error) {
 		console.log(error);
 	}
 

@@ -41,4 +41,4 @@ function setModalButtonsEventListeners() {
 	});
 }
 
-export { setModalButtonsEventListeners, closeModal };
+export { setModalButtonsEventListeners };
