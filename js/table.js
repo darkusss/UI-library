@@ -1,4 +1,4 @@
-import {closeModal} from './modal.js';
+import { closeModal } from './modal.js';
 import {getUsers, deleteUserById, updateUserById, addUserById} from './api.js'
 
 const sorts = {
@@ -314,11 +314,8 @@ function findBy(users, {fields, filters}, query) {
 	});
 }
 
-async function saveUser(popupWindow, apiURL, table, users, inputs, columns,) {
-	const id = +users.reduce((prev, current) => (prev.id > current.id) ? prev.id : current.id) + 1;
-
+async function saveUser(popupWindow, apiURL, table, users, inputs, columns) {
 	const newUser = {
-		id,
 		...inputs
 	};
 	// console.log(newUser);
@@ -326,10 +323,15 @@ async function saveUser(popupWindow, apiURL, table, users, inputs, columns,) {
 		if (!newUser[prop])
 			return;
 	}
+	try {
+		await addUserById(apiURL, newUser);
+		const copyUsers = await getUsers(apiURL);
+		renderTableBody(columns, table, copyUsers, apiURL);
+		closeModal(popupWindow);
+	} catch(error) {
+		console.log(error);
+	}
 
-	const copyUsers = await addUserById(apiURL, id, newUser).then(() => getUsers(apiURL));
-	renderTableBody(columns, table, copyUsers, apiURL);
-	closeModal(popupWindow);
 }
 
 function calculateAge(birthday) {

@@ -1,24 +1,25 @@
-function addUserById(apiURL, id, user) {
-	const data = {
+function addUserById(apiURL, user) {
+	const options = {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify(user)
 	}
-	return fetch(`${apiURL}/${id}`, data)
+
+	return fetch(apiURL, options)
 		.catch((error) => console.log(error));
 }
 
-function updateUserById(apiURL, userId, updatedUser) {
-	const data = {
+function updateUserById(apiURL, user) {
+	const options = {
 		method: 'PUT',
 		headers: {
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify(updatedUser)
+		body: JSON.stringify(user)
 	}
-	return fetch(`${apiURL}/${userId}`, data)
+	return fetch(`${apiURL}`, options)
 		.catch((error) => console.log(error));
 }
 
