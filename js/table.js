@@ -113,7 +113,7 @@ function createTableHead(config, table) {
 			const type = !col.type ? 'string' : col.type;
 			const sortClass = col.value === config.defaultSort.field ? sorts[config.defaultSort.state] : sorts['no'];
 			// fixme: make it up with creating dom elements
-			cell.innerHTML += `<button type="button" data-type="${type}" data-value="${col.value}"><i class="${sortClass}"></i></button>`;
+			cell.innerHTML += `<button type="button" data-type="${type}" data-value="${typeof col.value === 'function' ? 'function' : col.value}"><i class="${sortClass}"></i></button>`;
 		}
 	});
 }
@@ -290,8 +290,14 @@ function sortBy(type, value, sortType, data) {
 		: sortType.includes('down') ? -1
 			: 0;
 
+	console.log(value);
 	if (type === 'number') {
 		sortData.sort((u1, u2) => {
+			// FIXME: FIX SORT AGE
+			if (value === 'function') {
+				console.log(1);
+				return (calculateAge(u1.birthday) - calculateAge(u2.birthday)) * coef;
+			}
 			return (u1[value] - u2[value]) * coef;
 		});
 	} else if (type === 'string') {
