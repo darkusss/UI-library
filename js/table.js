@@ -34,15 +34,7 @@ async function DataTable(config, data) {
 					obj[col.value] = value;
 					return obj;
 				}, {});
-
-			// console.log(popupDOMInputs);
-
-			// config.columns.forEach(column => {
-			// 	if (column.editable) {
-			// 		const {value} = document.getElementById(column.value);
-			// 		popupDOMInputs[column.value] = value;
-			// 	}
-			// });
+			
 			saveUser(popUpWindow, config.apiUrl, table, users, popupDOMInputs, config.columns)
 		},
 		onCloseEventListener: () => closeModal(popUpWindow)
