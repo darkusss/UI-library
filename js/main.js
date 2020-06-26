@@ -66,14 +66,8 @@ const config1 = {
 };
 
 async function start() {
-
 	await DataTable(config1);
 	setModalButtonsEventListeners();
-
-	// todo: fix it
-	const inputDate = document.querySelector('#birthday');
-	inputDate.max = new Date().toISOString().split("T")[0];
-
 }
 
 start();

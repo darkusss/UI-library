@@ -11,7 +11,7 @@ function addUserById(apiURL, user) {
 		.catch((error) => console.log(error));
 }
 
-function updateUserById(apiURL, user) {
+function updateUserById(apiURL, id, user) {
 	const options = {
 		method: 'PUT',
 		headers: {
@@ -19,7 +19,13 @@ function updateUserById(apiURL, user) {
 		},
 		body: JSON.stringify(user)
 	}
-	return fetch(`${apiURL}`, options)
+	return fetch(`${apiURL}/${id}`, options)
+		.catch((error) => console.log(error));
+}
+
+function getUser(apiURL, id) {
+	return fetch(`${apiURL}/${id}`)
+		.then((res) => res.json())
 		.catch((error) => console.log(error));
 }
 
@@ -34,4 +40,4 @@ function deleteUserById(apiURL, userId) {
 		.catch((error) => console.log(error));
 }
 
-export { getUsers, addUserById, deleteUserById, updateUserById };
+export { getUsers, addUserById, deleteUserById, updateUserById, getUser};

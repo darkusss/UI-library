@@ -1,4 +1,5 @@
-import {getUsers, deleteUserById, updateUserById, addUserById} from './api.js'
+import {getUsers, deleteUserById, updateUserById, addUserById, getUser} from './api.js'
+import {openModal} from './modal.js';
 
 const sorts = {
 	no: 'fas fa-sort',
@@ -6,48 +7,58 @@ const sorts = {
 	descending: 'fas fa-sort-down'
 };
 
-// TODO: сделать кнопку редактирования
-// TODO: сделать нотификации
-// TODO: (опционально) изменить всякие чтуки
+const a = {};
 
 const addUserButton = document.querySelector('#add-user');
-const modalId = addUserButton.dataset.modalTarget;
+const addUserModalId = addUserButton.dataset.modalTarget;
+const updateUserModalId = '#update-user-popup';
 
-async function DataTable(config, data) {
+async function DataTable(config, data = undefined) {
 	const parent = document.querySelector(config.parent);
 
 	const users = !data && config.apiUrl ? await getUsers(config.apiUrl) : [...data];
 
 	if (config.search) createSearchField(parent);
 
-	const table = await createTable(config.apiUrl, config, parent);
 
-	const form = document.createElement('form');
+	// const form = document.createElement('form');
+	// form.name = 'myForm';
+	// form.id = 'myForm';
+	// const addUserForm = new FormData();
 
-	const popUpWindow = createPopupWindow(modalId.slice(1));
+	const addUserPopUpWindow = createPopupWindow(addUserModalId.slice(1));
 	const addUserPopupHeader = createAddUserPopupHeader('Введите данные');
-	const addUserPopupBody = createAddUserPopupBody(config.columns);
+	const addUserPopupBody = createAddUserPopupBody(config.columns, /*form*/);
 
-
-
-	const onSaveEventListener = () => {
+	const onAddEventListener = () => {
 		const popupDOMInputs = config.columns
 			.filter(col => col.editable)
 			.reduce((obj, col) => {
-				const {value} = document.getElementById(col.value);
+				const {value} = addUserPopupBody.querySelector(`[name=${col.value}]`);
 				obj[col.value] = value;
 				return obj;
 			}, {});
 
-		saveUser(popUpWindow, config.apiUrl, table, users, popupDOMInputs, config.columns)
+		saveUser(config, table, popupDOMInputs, (user) => addUserById(config.apiUrl, user));
 	}
 
-	const addUserPopupFooter = createAddUserPopupFooter(popUpWindow, onSaveEventListener);
+	const addUserPopupFooter = createAddUserPopupFooter(addUserPopUpWindow, onAddEventListener);
 
-	popUpWindow.append(form);
-	form.append(addUserPopupHeader, addUserPopupBody, addUserPopupFooter);
+	// popUpWindow.append(form);
+	addUserPopUpWindow.append(addUserPopupHeader, addUserPopupBody, addUserPopupFooter);
 
-	parent.append(popUpWindow);
+	const userUpdatePopupWindow = createPopupWindow(updateUserModalId.slice(1));
+	const updateUserPopupHeader = createAddUserPopupHeader('Введите данные');
+	const updateUserPopupBody = createAddUserPopupBody(config.columns, /*form*/);
+	const updateUserPopupFooter = createAddUserPopupFooter(userUpdatePopupWindow, undefined);
+
+	// popUpWindow.append(form);
+	userUpdatePopupWindow.append(updateUserPopupHeader, updateUserPopupBody, updateUserPopupFooter);
+
+	parent.append(addUserPopUpWindow, userUpdatePopupWindow);
+
+
+	const table = await createTable(config.apiUrl, config, parent);
 }
 
 async function createTable(apiURL, config, parent) {
@@ -146,13 +157,34 @@ function renderTableBody(cols, table, users, apiURL = '') {
 				}
 				if (col.value === 'acts') {
 					cell.innerHTML = `<button class="btn btn-danger" data-id="${user.id}">Удалить</button>`;
-					cell.innerHTML += `<button class="btn btn-warning" data-id="${user.id}" data-modal-target="${modalId}">Редактировать</button>`;
+					cell.innerHTML += `<button class="btn btn-warning" data-id="${user.id}" data-modal-target="${updateUserModalId}">Редактировать</button>`;
 					const deleteUserButton = cell.querySelector('.btn-danger');
-					const updateUserButton = cell.querySelector('.btn-danger');
+					const updateUserButton = cell.querySelector('.btn-warning');
 					addDeleteUserListener(deleteUserButton, apiURL, cols, table, user.id);
+					addUpdateUserListener(updateUserButton, apiURL, cols, table);
 					cell.classList.add('align-center');
 				}
 			}
+		});
+	});
+	const updateUserPopup = document.querySelector(updateUserModalId);
+	const saveUserButton = updateUserPopup.querySelector('[data-close-button]');
+	const config = {
+		apiUrl: apiURL,
+		columns: cols
+	};
+
+	saveUserButton.addEventListener('click', async () => {
+		const popupDOMInputs = cols
+			.filter(col => col.editable)
+			.reduce((obj, col) => {
+				const {value} = updateUserPopup.querySelector(`[name=${col.value}]`);
+				obj[col.value] = value;
+				return obj;
+			}, {});
+
+		await saveUser(config, table, popupDOMInputs, async (user) => {
+			await updateUserById(config.apiUrl, a.userId, user);
 		});
 	});
 }
@@ -181,7 +213,7 @@ function createAddUserPopupHeader(headerText) {
 
 function createAddUserPopupBody(columns) {
 	const addUserBody = document.createElement('div');
-
+	// addUserBody.append(form);
 	addUserBody.classList.add('modal-body');
 
 	columns.forEach(col => {
@@ -203,10 +235,11 @@ function createAddUserPopupFooter(popupWindow, onSaveEventListener) {
 
 	saveButton.classList.add('btn', 'btn-outline-success');
 	saveButton.textContent = 'Сохранить';
-	saveButton.addEventListener('click', (event) => {
-		event.preventDefault();
-		onSaveEventListener();
-	});
+	if (onSaveEventListener)
+		saveButton.addEventListener('click', (event) => {
+			// event.preventDefault();
+			onSaveEventListener();
+		});
 	saveButton.dataset.closeButton = '';
 
 	closeButton.classList.add('btn', 'btn-outline-danger');
@@ -222,7 +255,7 @@ function createInputField(col) {
 	const label = document.createElement('label');
 	const input = document.createElement('input');
 
-	input.id = col.value;
+	input.name = col.value;
 	input.type = col.value === 'birthday' ? 'date' : 'text';
 	if (col.value !== 'avatar')
 		input.required = true;
@@ -252,6 +285,27 @@ function addDeleteUserListener(button, apiURL, cols, table, id) {
 		const updatedUsers = await deleteUserById(apiURL, id).then(() => getUsers(apiURL));
 		renderTableBody(cols, table, updatedUsers, apiURL);
 	});
+}
+
+function addUpdateUserListener(updateUserButton, apiURL) {
+	const updateUserPopUp = document.querySelector(updateUserModalId);
+
+	updateUserButton.addEventListener('click', async () => {
+		a.button = updateUserButton;
+		a.userId = updateUserButton.dataset.id;
+		const updateUserInputsDom = updateUserPopUp.querySelectorAll('input');
+		const updateUserInputs = {};
+		const currentUser = await getUser(apiURL, updateUserButton.dataset.id);
+		updateUserInputsDom.forEach(input => {
+			if (input.name !== 'birthday') {
+				updateUserInputs[input.name] = (input.value = currentUser[input.name]);
+			} else {
+				updateUserInputs[input.name] = (input.value = currentUser[input.name].split('T')[0]);
+			}
+		});
+		openModal(updateUserPopUp);
+	});
+
 }
 
 function currentSortType(parent, button) {
@@ -312,19 +366,19 @@ function findBy(users, {fields, filters}, query) {
 	});
 }
 
-async function saveUser(popupWindow, apiURL, table, users, inputs, columns) {
+async function saveUser({apiUrl, columns}, table, inputs, dataManipulation) {
 	const newUser = {
 		...inputs
 	};
-	// console.log(newUser);
+
 	for (const prop in newUser) {
 		if (!newUser[prop])
 			return;
 	}
 	try {
-		await addUserById(apiURL, newUser);
-		const copyUsers = await getUsers(apiURL);
-		renderTableBody(columns, table, copyUsers, apiURL);
+		await dataManipulation(newUser);
+		const copyUsers = await getUsers(apiUrl);
+		renderTableBody(columns, table, copyUsers, apiUrl);
 	} catch (error) {
 		console.log(error);
 	}
