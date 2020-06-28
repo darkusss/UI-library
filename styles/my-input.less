@@ -1,0 +1,30 @@
+@import "colors";
+
+.input-section {
+	width: 1170px;
+	margin: 0 auto;
+
+	.input-wrapper {
+		max-width: 200px;
+		margin: 0 auto;
+		flex-direction: column;
+
+		label {
+			color: rgb(16,16,16);
+			font-weight: 700;
+		}
+
+		input {
+			width: 100%;
+			border: 1px solid gainsboro;
+			padding: 10px 20px;
+			margin: 5px 0;
+		}
+	}
+}
+
+.input-danger {
+	border: 2px solid @danger-color !important;
+}
+
+
