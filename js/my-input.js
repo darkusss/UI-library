@@ -21,10 +21,12 @@ Vue.component('my-input', {
 			required: true
 		},
 		validationRegExp: {
-			type: RegExp
+			type: RegExp,
+			required: false
 		},
 		errorMessage: {
-			type: String
+			type: String,
+			required: false
 		}
 	},
 	data() {
@@ -42,17 +44,24 @@ Vue.component('my-input', {
 			this.$emit('input', value);
 		}
 	},
+	computed: {
+		appropriateInputClass: function () {
+			return {
+				'input-danger': this.invalidInput || this.invalidInputExpression
+			};
+		}
+	},
 	template: `
 <label>{{title}} <span v-if="required">*</span>
   <input 
   	@blur="invalid"
 		@input="updateValue($event.target.value)"
-		:class="{'input-danger': invalidInput}"
+		:class="appropriateInputClass"
 		:placeholder="placeholder"
 		:required="required"
 		:type="type"
   >
-  <div v-if="invalidInputExpression" style="color: red;">  {{errorMessage}}</div>
+  <span v-if="invalidInputExpression" style="color: red; font-weight: 300;">  {{errorMessage}}</span>
 </label>
 `
 });
