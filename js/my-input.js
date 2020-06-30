@@ -36,27 +36,28 @@ Vue.component('my-input', {
 		}
 	},
 	methods: {
-		invalid: function (event) {
+		setValidationInputValues: function (event) {
 			this.invalidInput = this.required && !event.target.value.trim();
-			this.invalidInputExpression = !event.target.value.match(this.validationRegExp);
+			this.invalidInputExpression = !event.target.value.match(this.validationRegExp)
 		},
 		updateValue(value) {
 			this.$emit('input', value);
 		}
 	},
 	computed: {
-		appropriateInputClass: function () {
+		getSpecificInputClass: function () {
 			return {
 				'input-danger': this.invalidInput || this.invalidInputExpression
 			};
 		}
 	},
 	template: `
-<label>{{title}} <span v-if="required">*</span>
+<label class="input-label">{{title}} <span v-if="required">*</span>
   <input 
-  	@blur="invalid"
+  	class="input"
+  	@blur="setValidationInputValues"
 		@input="updateValue($event.target.value)"
-		:class="appropriateInputClass"
+		:class="getSpecificInputClass"
 		:placeholder="placeholder"
 		:required="required"
 		:type="type"

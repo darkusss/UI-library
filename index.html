@@ -121,7 +121,7 @@
 					value: '',
 					placeholder: "John",
 					required: true,
-					validationRegExp: /[A-Za-z]+/,
+					validationRegExp: /^[A-Za-z]+$/,
 					errorMessage: 'Please provide only letters'
 				},
 				{
@@ -129,7 +129,7 @@
 					value: '',
 					placeholder: "15",
 					type: "number",
-					required: true,
+					required: false,
 					validationRegExp: /^[+]?\d+$/,
 					errorMessage: 'Please provide only positive numbers'
 				},
