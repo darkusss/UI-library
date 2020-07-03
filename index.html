@@ -90,16 +90,17 @@
 </section>
 <section class="input-section">
 	<div id="app" class="input-wrapper flex-row">
+		{{questions[0].value}}
 		<my-input
 			v-for="q in questions"
 			:key="q.title"
 			:type="q.type"
 			:title="q.title"
-			@input="q.value = $event"
 			:placeholder="q.placeholder"
 			:required="q.required"
 			:validation-reg-exp="q.validationRegExp"
 			:error-message="q.errorMessage"
+			v-model="q.value"
 		/>
 	</div>
 </section>
