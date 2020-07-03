@@ -23,7 +23,7 @@
 
 	});
 </script>
-<style lang="less">
+<style scoped lang="less">
 	@primary-color: #007bff;
 	@secondary-color: #6c757d;
 	@success-color: #5cb85c;
@@ -62,7 +62,7 @@
 		}
 
 		.btn-outline-@{value} {
-			.btn-style(extract(@text-colors, @index), extract(@bg-colors, @index));
+			.btn-style(white, extract(@bg-colors, @index));
 			border: 1px solid extract(@bg-colors, @index);
 		}
 		.btn-outline-@{value}:hover {

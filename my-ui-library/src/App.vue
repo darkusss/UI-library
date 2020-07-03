@@ -8,7 +8,7 @@
 				<h2 class="section-brand">Buttons</h2>
 				<div class="section-inner">
 					<div class="row">
-						<h3>Type</h3>
+						<h3>Colors</h3>
 						<MyButton @click="trigger">Button</MyButton>
 						<MyButton
 							v-for="(color, idx) in colors"
@@ -52,7 +52,7 @@
 		},
 		data() {
 			return {
-				colors: ['danger', 'success', 'outline-primary'],
+				colors: ['danger', 'success', 'outline-primary', 'outline-secondary', 'outline-success', 'outline-danger', 'outline-info', 'outline-warning'],
 				sizes: ['sm', 'md', 'lg'],
 			};
 		},
@@ -66,6 +66,7 @@
 
 <style lang="less">
 	@primary-color: #007bff;
+	@secondary-color: #6c757d;
 	@success-color: #5cb85c;
 	@info-color: #5bc0de;
 	@warning-color: #ffc107;
@@ -118,7 +119,7 @@
 						width: 100%;
 
 						display: flex;
-						justify-content: space-between;
+						justify-content: flex-start;
 						flex-wrap: wrap;
 
 						h3 {
