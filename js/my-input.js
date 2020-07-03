@@ -3,39 +3,40 @@ Vue.component('my-input', {
 		title: {
 			type: String,
 			default: 'Text',
-			required: true
+			required: true,
 		},
 		placeholder: {
 			type: String,
 			default: 'test',
-			required: false
+			required: false,
 		},
 		type: {
 			type: String,
 			default: 'text',
-			required: false
+			required: false,
 		},
 		required: {
 			type: Boolean,
 			default: false,
-			required: true
+			required: true,
 		},
 		validationRegExp: {
 			type: RegExp,
-			required: false
+			required: false,
 		},
 		errorMessage: {
 			type: String,
-			required: false
+			required: false,
 		},
 		value: {
-			type: String
-		}
+			type: String,
+			default: '',
+		},
 	},
 	data() {
 		return {
 			invalidInput: false,
-			invalidInputExpression: false
+			invalidInputExpression: false,
 		}
 	},
 	methods: {
@@ -45,14 +46,14 @@ Vue.component('my-input', {
 		},
 		updateValue(value) {
 			this.$emit('input', value);
-		}
+		},
 	},
 	computed: {
 		getSpecificInputClass: function () {
 			return {
 				'input-danger': this.invalidInput || this.invalidInputExpression
 			};
-		}
+		},
 	},
 	template: `
 <label class="input-label">{{title}} <span v-if="required">*</span>
@@ -69,5 +70,5 @@ Vue.component('my-input', {
   >
   <span v-if="invalidInputExpression" style="color: red; font-weight: 300;">  {{errorMessage}}</span>
 </label>
-`
+`,
 });
