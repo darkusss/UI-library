@@ -1,6 +1,6 @@
 <template>
   <div class="carousel-container">
-    <div class="carousel-slide" :style="changedImage">
+    <div class="carousel-slide" :style="changeImage">
       <img
         v-for="(img, index) in images"
         :key="index"
@@ -23,48 +23,46 @@
 </template>
 
 <script lang="ts">
-  export default {
-    name: 'Carousel',
-    props: {
-      images: {
-        type: Array,
-      },
-      imageWidth: {
-        type: Number,
-        default: 320,
-      },
-      imageHeight: {
-        type: Number,
-        default: 240,
-      },
-    },
-    data: function (): object {
-      return {
-        counter: 0,
-        changedImage: {
-          translateX: this.changeImage + 'px',
+  import Vue from 'vue'
 
-        }
-      };
-    },
-    methods: {
-      onNextSlide(): void {
-        if (this.counter < this.images.length - 1) {
-          this.counter++;
-        }
+  export default Vue.extend({
+      name: 'Carousel',
+      props: {
+        images: {
+          type: Array,
+        },
+        imageWidth: {
+          type: Number,
+          default: 320,
+        },
+        imageHeight: {
+          type: Number,
+          default: 240,
+        },
       },
-      onPrevSlide(): void {
-        if (this.counter > 0) {
-          this.counter--;
-        }
+      data: function () {
+        return {
+          counter: 0,
+        };
       },
-    },
-    computed: {
-      changeImage(): number {
-        return -this.imageWidth * this.counter;
-      }
-    },
-  };
+      methods: {
+        onNextSlide() {
+          if (this.counter < this.images.length - 1) {
+            this.counter++;
+          }
+        },
+        onPrevSlide() {
+          if (this.counter > 0) {
+            this.counter--;
+          }
+        },
+      },
+      computed: {
+        changeImage(): object {
+          return { transform: 'translateX(' + (-this.imageWidth * this.counter) + 'px)' };
+        },
+      },
+  });
 </script>
 
 <style lang="less">
