@@ -5,7 +5,7 @@
 		</button>
 	</div>
 </template>
-<script>
+<script lang="ts">
 	import Vue from 'vue';
 
 	export default Vue.extend({
@@ -24,15 +24,6 @@
 	});
 </script>
 <style scoped lang="less">
-	@primary-color: #007bff;
-	@secondary-color: #6c757d;
-	@success-color: #5cb85c;
-	@info-color: #5bc0de;
-	@warning-color: #ffc107;
-	@danger-color: #dc3545;
-	@dark-color: #343a40;
-	@lighten-success: lighten(@success-color, 15%);
-
 	.btn {
 		margin: 10px 5px;
 		display: inline-block;
