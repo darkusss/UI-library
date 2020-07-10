@@ -32,6 +32,12 @@
         >
           Carousel
         </router-link>
+        |
+        <router-link
+          :to="{ name: 'Table'}"
+        >
+          Data Table
+        </router-link>
       </div>
     </header>
     <router-view/>

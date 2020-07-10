@@ -1,10 +1,13 @@
 import Vue from 'vue';
 import VueRouter, { RouteConfig } from 'vue-router';
+
 import Home from '@/views/Home.vue';
 import ButtonView from '@/views/ButtonView.vue';
 import ModalView from '@/views/ModalView.vue';
 import GridView from '@/views/GridView.vue';
 import CarouselView from '@/views/CarouselView.vue';
+import DataTableView from '@/views/DataTableView.vue';
+
 
 Vue.use(VueRouter);
 
@@ -33,6 +36,11 @@ const routes: RouteConfig[] = [
     path: '/carousel',
     name: 'Carousel',
     component: CarouselView,
+  },
+  {
+    path: '/table',
+    name: 'Table',
+    component: DataTableView,
   },
 ];
 
