@@ -1,6 +1,10 @@
 <template>
   <div>
-    <input v-if="search" type="text">
+    <input
+      v-if="search"
+      type="text"
+      v-model="query"
+    >
     <table>
       <thead>
       <tr>
@@ -12,7 +16,7 @@
           {{ col.title }}
           <button
             v-if="col.sortable"
-            @click="changeSortIcon(col)"
+            @click="changeSort(col)"
           >
             <i :class="col.currentSortIcon"></i>
           </button>
@@ -21,7 +25,7 @@
       </thead>
       <tbody>
       <tr
-        v-for="(item, itemIndex) in copyItems"
+        v-for="(item, itemIndex) in sortedItems"
         :key="itemIndex"
       >
         <td
@@ -29,7 +33,7 @@
           :key="colIndex"
           :class="{'align-right': col.type === 'number'}"
         >
-          {{ col.value === '_index' ? itemIndex + 1 : item[col.value] }}
+          {{ col.value === '_index' ? +itemIndex + 1 : item[col.value] }}
         </td>
       </tr>
       </tbody>
@@ -37,7 +41,7 @@
   </div>
 </template>
 
-<script lang="ts">
+<script>
   import Vue from 'vue';
 
   export default Vue.extend({
@@ -61,13 +65,14 @@
     },
     data() {
       return {
-        copyItems: Object.assign({}, this.items),
+        sortByColumn: null,
+        query: '',
       };
     },
     methods: {
-      changeSortIcon(column: any): void {
+      changeSort(column) {
 
-        this.columns.forEach((col: any): void => {
+        this.columns.forEach((col) => {
           if (col !== column && col.sortable) {
             col.currentSortIcon = this.sortButtonStyle.default;
           }
@@ -84,24 +89,43 @@
             column.currentSortIcon = this.sortButtonStyle.default;
             break;
         }
+
+        this.sortByColumn = column;
+
+        this.sortBy(this.items, column);
       },
+      sortBy(items, column, query) {
+
+        if (query !== '') {
+          return items.filter((item) => {
+            return this.search.fields.filter((field) => {
+              return this.search.filters.filter((searchFilter) => {
+                return searchFilter(item[field] + '').includes(searchFilter(this.query));
+              }).length
+            }).length
+          });
+        }
+
+        if (column !== null) {
+          const copiedItems = [...items];
+          const coef = column.currentSortIcon.includes('up') ? 1
+            : column.currentSortIcon.includes('down') ? -1
+              : 0;
+
+          if (column.type === 'number') {
+            return copiedItems.sort((u1, u2) => (u1[column.value] - u2[column.value]) * coef);
+          } else {
+            return copiedItems.sort((u1, u2) => (u1[column.value].localeCompare(u2[column.value])) * coef);
+          }
+        }
+
+        return items;
+      }
     },
     computed: {
-      // sortBy: function(type: any): void {
-      //   const coef = sortType.includes('up') ? 1
-      //     : sortType.includes('down') ? -1
-      //       : 0;
-      //
-      //   if (type === 'number') {
-      //     sortData.sort((u1, u2) => {
-      //       return (u1[value] - u2[value]) * coef;
-      //     });
-      //   } else if (type === 'string') {
-      //     sortData.sort((u1, u2) => {
-      //       return (u1[value].localeCompare(u2[value])) * coef;
-      //     });
-      //   }
-      // },
+      sortedItems() {
+        return this.sortBy(this.items, this.sortByColumn, this.query);
+      }
     },
   });
 </script>
