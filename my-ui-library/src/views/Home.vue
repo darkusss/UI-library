@@ -1,7 +1,6 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-<!--    Will be introduction to library-->
+  <div>
+    <h1>A tiny UI library does a big thing.</h1>
   </div>
 </template>
 
@@ -13,3 +12,14 @@ export default {
   },
 };
 </script>
+<style scoped>
+  h1 {
+    font-size: 3em;
+  }
+
+  div {
+    display: grid;
+    place-items: center;
+    height: 100vh;
+  }
+</style>

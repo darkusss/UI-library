@@ -2,7 +2,7 @@
   <div class="vue-popup">
     <div class="popup-trigger" @click="openPopup">
       <slot name="trigger">
-        <button>Open popup</button>
+        <MyButton>Open popup</MyButton>
       </slot>
     </div>
     <div class="popup" v-if="visible">
@@ -13,12 +13,12 @@
       </div>
       <div class="popup-body">
         <slot name="body">
-          This is a default text, instead of having it you should replace it yourself with named slot as body
+          This is a default text, instead of having it you should replace it yourself with your own text :)
         </slot>
       </div>
       <div class="popup-footer" @click="closePopup">
         <slot name="footer">
-          <button class="close-button">OK</button>
+          <MyButton color="danger" class="close-button">OK</MyButton>
         </slot>
       </div>
     </div>
@@ -28,9 +28,13 @@
 
 <script lang="ts">
   import Vue from 'vue';
+  import MyButton from "@/components/MyButton.vue";
 
   export default Vue.extend({
     name: 'Modal',
+    components: {
+      MyButton,
+    },
     props: {},
     data() {
       return {
@@ -50,7 +54,7 @@
   });
 </script>
 
-<style lang="less">
+<style scoped lang="less">
   .popup {
     position: fixed;
     top: 50%;

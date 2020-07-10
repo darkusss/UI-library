@@ -15,7 +15,7 @@
     "@vue/cli-plugin-router": "~4.4.0",
     "@vue/cli-plugin-typescript": "~4.4.0",
     "@vue/cli-service": "~4.4.0",
-    "less": "^3.0.4",
+    "less": "^3.11.3",
     "less-loader": "^5.0.0",
     "lint-staged": "^9.5.0",
     "typescript": "~3.9.3",

@@ -2,19 +2,32 @@
   <div id="app">
     <header class="header">
       <h1>Tiny UI library</h1>
+
+      <div id="nav">
+        <router-link
+          :to="{ name: 'Home'}"
+        >
+          Home
+        </router-link>
+        |
+        <router-link
+          :to="{ name: 'Button' }"
+        >
+          Button
+        </router-link>
+        |
+        <router-link
+          :to="{ name: 'Modal'}"
+        >
+          Modal
+        </router-link>
+      </div>
     </header>
-    <div id="nav">
-      <router-link to="/">Home</router-link>
-      |
-      <router-link to="/modal">Modal</router-link>
-      |
-      <router-link to="/button">Button</router-link>
-      |
-      <router-link to="/about">About</router-link>
-    </div>
+
     <router-view/>
   </div>
 </template>
+
 
 <style lang="less">
   @primary-color: #007bff;
@@ -35,17 +48,23 @@
 
   body {
     font-family: "Roboto Light", sans-serif;
-  }
 
-  #app {
-    background-color: @success-color;
-    color: @dark-color;
-
-    main {
+    #app {
       min-height: 100vh;
 
-      .section {
+      background-color: @success-color;
+      color: @dark-color;
 
+      .header {
+        max-width: 1170px;
+        margin: auto;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .section {
         padding: 50px;
 
         .section-brand {
@@ -82,6 +101,19 @@
               border-bottom: 1px solid @dark-color;
             }
           }
+        }
+      }
+    }
+
+    #nav {
+      padding: 30px;
+
+      a {
+        font-weight: bold;
+        color: #2c3e50;
+
+        &.router-link-exact-active {
+          color: #02f181;
         }
       }
     }

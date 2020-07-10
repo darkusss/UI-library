@@ -4,7 +4,7 @@
     <div class="section-inner">
       <Modal>
         <template v-slot:trigger>
-          <button>Open modal</button>
+          <MyButton>Open modal</MyButton>
         </template>
       </Modal>
     </div>
@@ -13,11 +13,13 @@
 
 <script lang="ts">
   import Modal from '@/components/Modal.vue';
+  import MyButton from "@/components/MyButton.vue";
 
   export default {
     name: 'ModalView',
     components: {
       Modal,
+      MyButton
     },
   };
 </script>

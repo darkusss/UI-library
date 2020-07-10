@@ -13,22 +13,14 @@ const routes: RouteConfig[] = [
     component: Home,
   },
   {
-    path: '/modal',
-    name: 'ModalView',
-    component: ModalView,
-  },
-  {
     path: '/button',
-    name: 'ButtonView',
+    name: 'Button',
     component: ButtonView,
   },
   {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue'),
+    path: '/modal',
+    name: 'Modal',
+    component: ModalView,
   },
 ];
 
