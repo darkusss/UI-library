@@ -1,11 +1,14 @@
 <template>
-  <div class="data-table-view">
-    <DataTable
-      :columns="columns"
-      :items="items"
-      :sort-button-style="sortButtonStyle"
-      :search="search"
-    />
+  <div class="section">
+		<h2 class="section-brand">Data Table</h2>
+		<div class="section-inner">
+			<DataTable
+				:columns="columns"
+				:items="items"
+				:sort-button-style="sortButtonStyle"
+				:search="search"
+			/>
+		</div>
   </div>
 </template>
 
