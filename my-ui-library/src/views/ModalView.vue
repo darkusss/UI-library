@@ -13,13 +13,13 @@
 
 <script lang="ts">
   import Modal from '@/components/Modal.vue';
-  import MyButton from "@/components/MyButton.vue";
+  import MyButton from '@/components/MyButton.vue';
 
   export default {
     name: 'ModalView',
     components: {
       Modal,
-      MyButton
+      MyButton,
     },
   };
 </script>

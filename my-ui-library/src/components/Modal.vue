@@ -28,7 +28,7 @@
 
 <script lang="ts">
   import Vue from 'vue';
-  import MyButton from "@/components/MyButton.vue";
+  import MyButton from '@/components/MyButton.vue';
 
   export default Vue.extend({
     name: 'Modal',

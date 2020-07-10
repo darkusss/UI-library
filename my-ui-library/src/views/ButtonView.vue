@@ -42,7 +42,7 @@
       };
     },
     methods: {
-      trigger: function () {
+      trigger: () => {
         alert(`You just triggered me`);
       },
     },
