@@ -3,6 +3,7 @@ import VueRouter, { RouteConfig } from 'vue-router';
 import Home from '@/views/Home.vue';
 import ButtonView from '@/views/ButtonView.vue';
 import ModalView from '@/views/ModalView.vue';
+import GridView from '@/views/GridView.vue';
 
 Vue.use(VueRouter);
 
@@ -21,6 +22,11 @@ const routes: RouteConfig[] = [
     path: '/modal',
     name: 'Modal',
     component: ModalView,
+  },
+  {
+    path: '/grid',
+    name: 'Grid',
+    component: GridView,
   },
 ];
 

@@ -2,7 +2,6 @@
   <div id="app">
     <header class="header">
       <h1>Tiny UI library</h1>
-
       <div id="nav">
         <router-link
           :to="{ name: 'Home'}"
@@ -21,13 +20,17 @@
         >
           Modal
         </router-link>
+        |
+        <router-link
+          :to="{ name: 'Grid'}"
+        >
+          Grid
+        </router-link>
       </div>
     </header>
-
     <router-view/>
   </div>
 </template>
-
 
 <style lang="less">
   @primary-color: #007bff;
@@ -119,3 +122,4 @@
     }
   }
 </style>
+
