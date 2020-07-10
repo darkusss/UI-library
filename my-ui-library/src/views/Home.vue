@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>A tiny UI library does a big thing.</h1>
+    <h1>A lightweight tiny UI library does a big thing.</h1>
   </div>
 </template>
 
