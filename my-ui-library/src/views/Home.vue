@@ -3,8 +3,7 @@
     <h1>A lightweight tiny UI library does a big thing.</h1>
   </div>
 </template>
-
-<script>
+<script lang="ts">
 
 export default {
   name: 'Home',

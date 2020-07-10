@@ -10,6 +10,7 @@
   "dependencies": {
     "git": "^0.1.5",
     "vue": "^2.6.11",
+    "vue-property-decorator": "^9.0.0",
     "vue-router": "^3.2.0"
   },
   "devDependencies": {

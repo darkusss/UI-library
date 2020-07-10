@@ -4,6 +4,7 @@ import Home from '@/views/Home.vue';
 import ButtonView from '@/views/ButtonView.vue';
 import ModalView from '@/views/ModalView.vue';
 import GridView from '@/views/GridView.vue';
+import CarouselView from '@/views/CarouselView.vue';
 
 Vue.use(VueRouter);
 
@@ -27,6 +28,11 @@ const routes: RouteConfig[] = [
     path: '/grid',
     name: 'Grid',
     component: GridView,
+  },
+  {
+    path: '/carousel',
+    name: 'Carousel',
+    component: CarouselView,
   },
 ];
 

@@ -26,6 +26,12 @@
         >
           Grid
         </router-link>
+        |
+        <router-link
+          :to="{ name: 'Carousel'}"
+        >
+          Carousel
+        </router-link>
       </div>
     </header>
     <router-view/>
