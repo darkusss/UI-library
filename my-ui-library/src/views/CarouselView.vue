@@ -4,7 +4,6 @@
     <div class="section-inner">
       <Carousel
         :images="images"
-        :image-height="imageHeight"
       />
     </div>
   </div>
@@ -25,7 +24,6 @@
           'https://loremflickr.com/320/240?random=1',
           'https://loremflickr.com/320/240?random=1',
         ],
-        imageHeight: 123,
       };
     },
   };
