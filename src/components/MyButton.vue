@@ -13,15 +13,18 @@
 <script lang="ts">
 	import Vue from 'vue';
 
+	type Color = 'secondary' | 'dark' | 'primary' | 'info' | 'warning' | 'success' | 'danger';
+	type Size = 'sm' | 'md' | 'lg';
+
 	export default Vue.extend({
 		name: 'MyButton',
 		props: {
 			size: {
-				type: String,
+				type: String as () => Size,
 				default: 'md',
 			},
 			color: {
-				type: String,
+				type: String as () => Color,
 				default: 'secondary',
 			},
 			rounded: {
